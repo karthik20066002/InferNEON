@@ -1,0 +1,6 @@
+[build]
+target = "aarch64-unknown-none"
+
+[target.aarch64-unknown-none]
+# NEON is on by default for cortex-a72; do NOT use softfloat.
+rustflags = ["-C", "link-arg=-Tlinker.ld", "-C", "target-cpu=cortex-a72"]

@@ -1,0 +1,30 @@
+[package]
+name = "inferneon"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "inferneon"
+path = "src/main.rs"
+
+[dependencies]
+libm = "0.2"
+
+[features]
+# Build switch: `neon` ON = NEON kernels on aarch64 (+ scalar fallback elsewhere).
+# OFF (`just build 0` / `--no-default-features`) = scalar reference everywhere.
+default = ["neon"]
+neon = []
+
+[profile.release]
+# Max-opts for bare-metal inference: speed over size.
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+overflow-checks = false
+strip = true
+
+[profile.dev]
+opt-level = 0
+panic = "abort"

@@ -1,0 +1,8 @@
+/target
+kernel.bin
+kernel.elf
+disk.img
+disk-olmoe.img
+layer_table.bin
+models/
+*.img
