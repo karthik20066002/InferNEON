@@ -1,0 +1,84 @@
+{
+  "label": "MEASURED",
+  "pairs": 14,
+  "positions": 68520,
+  "set_drift_positions": 10878,
+  "F_set_drift": 0.15875656742556918,
+  "slot_drift": 0.13052211033274957,
+  "per_domain_set_drift": {
+    "chat": 0.1065424610051993,
+    "tamil_hindi": 0.18527728873239438
+  },
+  "p8_p9_gap": {
+    "chat": {
+      "n": 23080,
+      "median": 0.0006090002134442329,
+      "mean": 0.0011315905114561578,
+      "frac_below_1e3": 0.6534662045060659
+    },
+    "tamil_hindi": {
+      "n": 45440,
+      "median": 0.0005540009588003159,
+      "mean": 0.0009234309870676747,
+      "frac_below_1e3": 0.6967649647887324
+    }
+  },
+  "per_prompt": {
+    "chat_calib_01": {
+      "positions": 3680,
+      "set_drift": 0.05733695652173913
+    },
+    "chat_calib_02": {
+      "positions": 3240,
+      "set_drift": 0.06450617283950617
+    },
+    "chat_calib_03": {
+      "positions": 3240,
+      "set_drift": 0.18888888888888888
+    },
+    "chat_held_01": {
+      "positions": 3840,
+      "set_drift": 0.12109375
+    },
+    "chat_held_02": {
+      "positions": 3640,
+      "set_drift": 0.0912087912087912
+    },
+    "chat_held_03": {
+      "positions": 2560,
+      "set_drift": 0.168359375
+    },
+    "chat_held_04": {
+      "positions": 2880,
+      "set_drift": 0.06909722222222223
+    },
+    "tamil_calib_01": {
+      "positions": 5840,
+      "set_drift": 0.1517123287671233
+    },
+    "tamil_calib_02": {
+      "positions": 6000,
+      "set_drift": 0.18033333333333335
+    },
+    "tamil_calib_03": {
+      "positions": 5560,
+      "set_drift": 0.22158273381294963
+    },
+    "tamil_held_01": {
+      "positions": 6600,
+      "set_drift": 0.13606060606060605
+    },
+    "tamil_held_02": {
+      "positions": 6960,
+      "set_drift": 0.20646551724137932
+    },
+    "tamil_held_03": {
+      "positions": 7400,
+      "set_drift": 0.22378378378378377
+    },
+    "tamil_held_04": {
+      "positions": 7080,
+      "set_drift": 0.17344632768361581
+    }
+  }
+}

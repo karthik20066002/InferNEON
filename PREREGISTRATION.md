@@ -94,3 +94,30 @@ how they (and any candidate) will be scored, before any of them run.
 - The 87.16% cross-trace agreement is reported as the MEASUREMENT CEILING
   (no cross-trace comparison can resolve what the traces don't share),
   never as a baseline to beat.
+
+## Amendment 2026-09-29 — headline comparison, Holm secondaries, frozen split
+
+Confirmed: Δ-wobble only, no stacking. Both policies run on the same
+trace, so shared trace-level noise cancels in the paired Δ (the paired
+t-test argument); per-policy max(W) would count noise that cannot change
+the winner. Deliberate, locked.
+
+- Headline (the paper/Lossfunk claim): early-router vs B2
+  (co-occurrence), recall@8. Single pre-specified primary; rules (1)(2)(3)
+  from amendment 2, no multiplicity adjustment.
+- Secondaries (5 tests: vs B0@8, vs B1@8, vs B0@12, vs B1@12, vs B2@12):
+  rules (1)(2) per test, and rule (3) replaced by Holm step-down on
+  one-sided prompt-level bootstrap p-values at family α=0.05
+  (`sim/metrics.py::holm_reject`). Picked Holm over exploratory-only so
+  secondary claims stay possible with FWER control. B0/B1/B2 are Helen's;
+  B2 = co-occurrence.
+- Frozen split (no seeds-pick-them, IDs fixed here). Calibration (15):
+  chat_calib_01..03, code_calib_01..03, math_calib_01..03,
+  sum_calib_01..03, tamil_calib_01..03. Eval (20): chat_held_01..04,
+  code_held_01..04, math_held_01..04, sum_held_01..04, tamil_held_01..04.
+  Every domain in both halves.
+- Per-domain numbers (n≈4 eval prompts each) are DESCRIPTIVE ONLY: report
+  them, make no significance claims on them. Locked so nobody is tempted
+  later.
+- FREEZE: after this amendment, any rule change needs a written reason AND
+  must precede the affected policy runs. The preregistration is finished.

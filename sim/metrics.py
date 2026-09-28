@@ -71,6 +71,49 @@ def wobble(metric_ref: float, metric_fla: float) -> float:
     return abs(metric_ref - metric_fla)
 
 
+def bootstrap_delta_p(a: Mapping[str, list[float]], b: Mapping[str, list[float]],
+                      replicates: int = BOOTSTRAP_REPLICATES,
+                      seed: int = BOOTSTRAP_SEED) -> float:
+    """One-sided prompt-level bootstrap p-value for mean(A) > mean(B).
+
+    Same resampling as bootstrap_delta_ci. p = fraction of replicate deltas
+    <= 0, with +1 smoothing (never exactly 0). Deterministic in `seed`.
+    Used for Holm-corrected secondary comparisons (amendment 3).
+    """
+    if set(a) != set(b):
+        raise ValueError('policies must cover the same prompts')
+    prompts = sorted(a)
+    for p in prompts:
+        if len(a[p]) != len(b[p]):
+            raise ValueError(f'position mismatch in prompt {p}')
+    rng = random.Random(seed)
+    extreme = 0
+    for _ in range(replicates):
+        sample = [rng.choice(prompts) for _ in prompts]
+        sa = [v for p in sample for v in a[p]]
+        sb = [v for p in sample for v in b[p]]
+        if statistics.mean(sa) - statistics.mean(sb) <= 0:
+            extreme += 1
+    return (1 + extreme) / (replicates + 1)
+
+
+def holm_reject(pvals: Sequence[float], alpha: float = 0.05) -> list[bool]:
+    """Holm step-down FWER control at family level `alpha`.
+
+    Sorts p-values ascending; rejects while p_(i) <= alpha/(m-i+1), stops at
+    the first failure. Returns reject flags aligned with input order.
+    """
+    m = len(pvals)
+    order = sorted(range(m), key=lambda i: pvals[i])
+    reject = [False] * m
+    for rank, i in enumerate(order):
+        if pvals[i] <= alpha / (m - rank):
+            reject[i] = True
+        else:
+            break
+    return reject
+
+
 def beats_baseline(delta_ref: float, delta_fla: float,
                    ci_ref: tuple[float, float],
                    ci_fla: tuple[float, float]) -> dict:

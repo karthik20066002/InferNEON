@@ -1,6 +1,7 @@
 import unittest
 from sim.metrics import (recall_at_k, exact_set_accuracy, mean_recall,
-                         bootstrap_delta_ci, wobble, beats_baseline)
+                         bootstrap_delta_ci, bootstrap_delta_p, holm_reject,
+                         wobble, beats_baseline)
 
 
 class MetricsTests(unittest.TestCase):
@@ -54,6 +55,21 @@ class MetricsTests(unittest.TestCase):
 
     def test_wobble(self):
         self.assertAlmostEqual(wobble(0.9, 0.87), 0.03)
+
+    def test_bootstrap_p_and_holm(self):
+        a = {f'p{i}': [0.9, 0.8] for i in range(6)}
+        b = {f'p{i}': [0.5, 0.4] for i in range(6)}
+        p = bootstrap_delta_p(a, b)
+        self.assertEqual(p, bootstrap_delta_p(a, b))  # deterministic
+        self.assertLess(p, 0.01)  # clear separation: tiny p
+        p0 = bootstrap_delta_p(a, a)
+        self.assertEqual(p0, 1.0)  # identical: every replicate delta is 0
+        # Holm: rejects 0.001, stops at 0.03 (0.03 > 0.05/2)
+        self.assertEqual(holm_reject([0.001, 0.03, 0.5]), [True, False, False])
+        self.assertEqual(holm_reject([0.5, 0.4]), [False, False])
+        self.assertEqual(holm_reject([]), [])
+        with self.assertRaises(ValueError):
+            bootstrap_delta_p({'p1': [1.0]}, {'p2': [1.0]})
 
 
 if __name__ == '__main__':
