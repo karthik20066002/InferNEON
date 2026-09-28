@@ -6,15 +6,20 @@
 # Finish with: .venv/bin/python scripts/summarize_drift.py
 set -u
 cd "$(dirname "$0")/.."
-MASTER="reports/drift_35_master.log"
-mkdir -p reports/drift_35
+# OUTDIR override keeps reruns as separate evidence (default: original dir).
+OUTDIR="${OUTDIR:-reports/drift_35}"
+MASTER="${OUTDIR}_master.log"
+mkdir -p "$OUTDIR"
 export PROMPTS_LIST
 PROMPTS_LIST="$(mktemp)"
 .venv/bin/python -c "
 import json, glob, os
 n = 0
+def key(f):
+    # mechanism-first: tamil_hindi pairs complete earliest for the gap probe
+    return (0 if 'tamil' in f else 1, f)
 with open(os.environ['PROMPTS_LIST'], 'w') as out:
-    for f in sorted(glob.glob('data/prompts/*.jsonl')):
+    for f in sorted(glob.glob('data/prompts/*.jsonl'), key=key):
         for line in open(f):
             line = line.strip()
             if line:
@@ -22,11 +27,11 @@ with open(os.environ['PROMPTS_LIST'], 'w') as out:
                 n += 1
 print(str(n) + ' prompts', flush=True)
 "
-echo "DRIFT35 START $(date -Iseconds)" >> "$MASTER"
+echo "DRIFT35 START $(date -Iseconds) outdir=$OUTDIR" >> "$MASTER"
 while read -r file pid; do
   for k in fla ref; do
-    out="reports/drift_35/${pid}_${k}.json"
-    log="reports/drift_35/${pid}_${k}.log"
+    out="$OUTDIR/${pid}_${k}.json"
+    log="$OUTDIR/${pid}_${k}.log"
     if [ -s "$out" ]; then
       echo "SKIP $pid $k (exists)" >> "$MASTER"
       continue

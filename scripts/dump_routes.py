@@ -74,9 +74,19 @@ def main():
     sc.weight_cache = WeightCache(0)
     with torch.inference_mode():
         result = run(sc, ids, args.tokens)
-    records = [{'top8': [t.tolist() for t in r['top8']],
-                'scores8': [s.tolist() for s in r['scores8']]}
-               for r in result['records']]
+    records = []
+    for r in result['records']:
+        # Full-softmax top-16 (ids + probs) alongside the gate's renormalized
+        # top-8: the p8-p9 probability gap is the mechanism probe for
+        # flip-prone positions (PREREGISTRATION.md amendment 2026-09-29).
+        # logits256 are raw router logits (fp16 CPU); probs recomputed here
+        # in float32, rounded to 6dp to keep dumps compact.
+        probs = torch.softmax(torch.stack([l.float() for l in r['logits256']]), dim=-1)
+        pv, pi = torch.topk(probs, 16, dim=-1)
+        records.append({'top8': [t.tolist() for t in r['top8']],
+                        'scores8': [s.tolist() for s in r['scores8']],
+                        'top16_ids': pi.tolist(),
+                        'top16_probs': torch.round(pv, decimals=6).tolist()})
     out = {'label': 'MEASURED', 'prompt_id': prompt_id, 'domain': domain,
            'prompt_tokens': len(ids),
            'assumed_test_parameters': vars(args),

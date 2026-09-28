@@ -48,3 +48,24 @@ commit recorded at the bottom; the content above it is frozen there.
 
 Ratified in: 715c05bfa32ed3d824018a827c9517179520856a (content frozen here;
 this line was the only change after it — verify with `git show`)
+
+## Amendment 2026-09-29 — units fix: noise measured in the metric itself
+
+No policy results exist; this change is legitimate. Reason: F (12.84%)
+counts per-SPOT set changes, while hit rate counts per-EXPERT presence.
+Most changed spots swap 1 of 8 experts, so per-expert drift is ~F/8, and
+requiring a >12.84-point hit-rate margin would be ~8x too strict — real
+differences (e.g. LFU over LRU by 5 points) would be discarded as noise.
+
+- Hit-rate comparisons: for each policy P, run it on BOTH traces and take
+  the wobble W(P) = |hit_rate_ref(P) − hit_rate_FLA(P)|, in hit-rate units,
+  no conversion. A beats B only if it wins on BOTH traces with margin >
+  max(W(A), W(B)) on EACH trace.
+- Exact-set predictor accuracy stays on F (12.84% pooled): per-spot metric,
+  same units as F. Win on both traces by > F.
+- Per-domain claims use per-domain noise (F_domain / W_domain); pooled
+  claims use pooled noise. Never apply the worst domain's number globally.
+- Mechanism probe (pre-registered analysis, not a claim): the router's
+  8th-vs-9th full-softmax score gap per domain. Hypothesis: smaller gaps on
+  low-resource scripts explain fragile routing (tamil_hindi: 7 prompts, so
+  its 18.53% carries wide error bars regardless).
