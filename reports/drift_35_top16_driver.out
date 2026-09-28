@@ -1,10 +1,1 @@
 35 prompts
-Terminated                 OUTDIR=reports/drift_35_top16 bash scripts/drift_35.sh
-pairs: 14, positions: 68520
-F (set-drift, THE floor): 10878/68520 = 15.88%
-slot-drift (diagnostic): 13.05%
-  chat: 10.65%
-  tamil_hindi: 18.53%
-  gap p8-p9 chat: n=23080 median=6.09e-04 mean=1.13e-03 frac<1e-3=0.653
-  gap p8-p9 tamil_hindi: n=45440 median=5.54e-04 mean=9.23e-04 frac<1e-3=0.697
-wrote reports/drift_35_top16/summary.json

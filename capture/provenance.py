@@ -89,11 +89,22 @@ def git_state(root: Path) -> dict:
 
 
 def require_clean_tree(root: Path, allow_dirty: bool, script: str) -> dict:
-    """Refuse to run paper-number scripts on a dirty tree. Returns git_state."""
+    """Refuse to run paper-number scripts on a dirty tree. Returns git_state.
+
+    Only tracked CODE counts: reports/** are outputs (appended/overwritten
+    by running jobs) and are excluded, otherwise a run series would dirty
+    the tree against itself and every run after the first would refuse.
+    `git_tracked_dirty` still reports full-tracked dirt for the record.
+    """
     state = git_state(root)
-    if state['git_tracked_dirty'] and not allow_dirty:
+    code_diff = subprocess.run(
+        ['git', '-C', str(root), 'diff', '--quiet', 'HEAD', '--', '.',
+         ':!reports'],
+        capture_output=True, text=True)
+    code_dirty = bool(code_diff.returncode)
+    if code_dirty and not allow_dirty:
         raise SystemExit(
-            f'{script}: refusing to run: tracked files are modified '
+            f'{script}: refusing to run: tracked code is modified '
             f'(commit {state["git_commit"]} does not describe this tree). '
             f'Commit first, or pass --allow-dirty (recorded in the output).')
     if state['git_tracked_dirty'] is None:

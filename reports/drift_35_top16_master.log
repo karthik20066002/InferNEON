@@ -273,3 +273,65 @@ DONE sum_held_01 fla rc=1 2026-09-29T05:06:00+05:30
 START sum_held_01 ref 2026-09-29T05:06:00+05:30
 DONE sum_held_01 ref rc=1 2026-09-29T05:06:04+05:30
 START sum_held_02 fla 2026-09-29T05:06:04+05:30
+DRIFT35 START 2026-09-29T05:06:35+05:30 outdir=reports/drift_35_top16
+SKIP tamil_calib_01 fla (exists)
+SKIP tamil_calib_01 ref (exists)
+SKIP tamil_calib_02 fla (exists)
+SKIP tamil_calib_02 ref (exists)
+SKIP tamil_calib_03 fla (exists)
+SKIP tamil_calib_03 ref (exists)
+SKIP tamil_held_01 fla (exists)
+SKIP tamil_held_01 ref (exists)
+SKIP tamil_held_02 fla (exists)
+SKIP tamil_held_02 ref (exists)
+SKIP tamil_held_03 fla (exists)
+SKIP tamil_held_03 ref (exists)
+SKIP tamil_held_04 fla (exists)
+SKIP tamil_held_04 ref (exists)
+SKIP chat_calib_01 fla (exists)
+SKIP chat_calib_01 ref (exists)
+SKIP chat_calib_02 fla (exists)
+SKIP chat_calib_02 ref (exists)
+SKIP chat_calib_03 fla (exists)
+SKIP chat_calib_03 ref (exists)
+SKIP chat_held_01 fla (exists)
+SKIP chat_held_01 ref (exists)
+SKIP chat_held_02 fla (exists)
+SKIP chat_held_02 ref (exists)
+SKIP chat_held_03 fla (exists)
+SKIP chat_held_03 ref (exists)
+SKIP chat_held_04 fla (exists)
+SKIP chat_held_04 ref (exists)
+START code_calib_01 fla 2026-09-29T05:06:35+05:30
+DONE code_calib_01 fla rc=1 2026-09-29T05:06:40+05:30
+START code_calib_01 ref 2026-09-29T05:06:40+05:30
+DONE code_calib_01 ref rc=1 2026-09-29T05:06:44+05:30
+START code_calib_02 fla 2026-09-29T05:06:44+05:30
+DONE code_calib_02 fla rc=1 2026-09-29T05:06:49+05:30
+START code_calib_02 ref 2026-09-29T05:06:49+05:30
+DONE code_calib_02 ref rc=1 2026-09-29T05:06:53+05:30
+START code_calib_03 fla 2026-09-29T05:06:53+05:30
+DONE code_calib_03 fla rc=1 2026-09-29T05:06:57+05:30
+START code_calib_03 ref 2026-09-29T05:06:57+05:30
+DONE code_calib_03 ref rc=1 2026-09-29T05:07:01+05:30
+START code_held_01 fla 2026-09-29T05:07:01+05:30
+DONE code_held_01 fla rc=1 2026-09-29T05:07:05+05:30
+START code_held_01 ref 2026-09-29T05:07:05+05:30
+DONE code_held_01 ref rc=1 2026-09-29T05:07:09+05:30
+START code_held_02 fla 2026-09-29T05:07:09+05:30
+DONE code_held_02 fla rc=1 2026-09-29T05:07:13+05:30
+START code_held_02 ref 2026-09-29T05:07:13+05:30
+DONE code_held_02 ref rc=1 2026-09-29T05:07:16+05:30
+START code_held_03 fla 2026-09-29T05:07:16+05:30
+DONE code_held_03 fla rc=1 2026-09-29T05:07:21+05:30
+START code_held_03 ref 2026-09-29T05:07:21+05:30
+DONE code_held_03 ref rc=1 2026-09-29T05:07:24+05:30
+START code_held_04 fla 2026-09-29T05:07:24+05:30
+DONE code_held_04 fla rc=1 2026-09-29T05:07:29+05:30
+START code_held_04 ref 2026-09-29T05:07:29+05:30
+DONE code_held_04 ref rc=1 2026-09-29T05:07:32+05:30
+START math_calib_01 fla 2026-09-29T05:07:32+05:30
+DONE math_calib_01 fla rc=1 2026-09-29T05:07:36+05:30
+START math_calib_01 ref 2026-09-29T05:07:36+05:30
+DONE math_calib_01 ref rc=1 2026-09-29T05:07:40+05:30
+START math_calib_02 fla 2026-09-29T05:07:40+05:30
