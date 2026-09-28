@@ -1,5 +1,29 @@
 # CHANGELOG — decisions and lock events (newest first)
 
+## 2026-09-28 — rotary meta-buffer fix; deterministic cache proof (MEASURED)
+- `capture/stream_capture.py` now materializes `rotary_emb.inv_freq` /
+  `original_inv_freq` from config at init. They are nn.Buffers, so the
+  meta-device init left them on `meta` and the per-layer loader (Parameters
+  only) never touched them. Qwen3.5's matmul-based mrope does not fail loudly
+  on meta input (meta@real silently yields zeros): every full-attention layer
+  ran position-blind (cos=1, sin=0 MEASURED), and NaN under deterministic
+  algorithms. The checkpoint carries no rotary keys, so config-derived values
+  are exactly HF-real-init values.
+- Consequence: all pre-fix traces/validations (the 228-mismatch files) are
+  superseded; they describe a position-blind model.
+- `scripts/benchmark_weight_cache.py`: `--deterministic` flag,
+  `exact_vs_uncached` is now a real comparison (was hardcoded to the mode
+  label), expert-overlap / per-layer diagnostics, single-run timing
+  disclaimer, status no longer promotable to PASS on equal counts in the
+  noise regime.
+- `reports/weight_cache_fixed_det.json` (`CUBLAS_WORKSPACE_CONFIG=:4096:8`,
+  MEASURED): off1/off2/cold/warm agree bit-for-bit, 0/920 route mismatches,
+  identical LM-logit hashes, status PASS. Weight cache proven inert on this
+  kernel set. Scratch bisect scripts removed; their logs stay in `reports/`.
+- Timings remain noise (decode 3.2–8.9s across runs); no speedup claim.
+- Next: install flash-linear-attention + causal-conv1d, then rerun this
+  validation (kernels change numerics) before revisiting cache numbers.
+
 ## 2026-09-28 — capture-only weight cache tested (MEASURED)
 - Added `capture/weight_cache.py`: layer-qualified `(layer, expert)` keys,
   owned immutable tensors, fixed byte budget, no eviction policy. Prefill does
