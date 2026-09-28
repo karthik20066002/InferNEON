@@ -18,9 +18,11 @@ def main():
     a_path, b_path = sys.argv[1], sys.argv[2]
     a, b = load(a_path), load(b_path)
     print(f'A: {a_path} kernels={a.get("delta_kernels")} logits={a["logits_sha256"][:12]} '
-          f'det={a.get("deterministic_algorithms")}')
+          f'det={a.get("deterministic_algorithms")} prompt={a.get("prompt_id")}')
     print(f'B: {b_path} kernels={b.get("delta_kernels")} logits={b["logits_sha256"][:12]} '
-          f'det={b.get("deterministic_algorithms")}')
+          f'det={b.get("deterministic_algorithms")} prompt={b.get("prompt_id")}')
+    if a.get('prompt_id') != b.get('prompt_id'):
+        raise SystemExit('dumps cover different prompts; not comparable')
     if a['prompt_tokens'] != b['prompt_tokens'] or len(a['records']) != len(b['records']):
         raise SystemExit('dumps cover different token counts; not comparable')
     if a['tokens'] != b['tokens']:

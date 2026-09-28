@@ -30,6 +30,9 @@ from benchmark_weight_cache import run, digest
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--tokens', type=int, default=1)
+    ap.add_argument('--prompts-file', default=None,
+                    help='JSONL with prompt_id/text fields; select with --prompt-id.')
+    ap.add_argument('--prompt-id', default=None)
     ap.add_argument('--deterministic', action='store_true')
     ap.add_argument('--allow-dirty', action='store_true')
     ap.add_argument('--force-reference-kernels', action='store_true')
@@ -46,7 +49,25 @@ def main():
         torch.use_deterministic_algorithms(True)
     model = ROOT / 'models/qwen-gptq-int4'
     tok = AutoTokenizer.from_pretrained(model, local_files_only=True)
-    text = 'Explain why the sky is blue in one short paragraph:'
+    if args.prompts_file:
+        wanted = None
+        with open(args.prompts_file) as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                d = json.loads(line)
+                if d.get('prompt_id') == args.prompt_id:
+                    wanted = d
+                    break
+        if wanted is None:
+            raise SystemExit(f'prompt {args.prompt_id!r} not in {args.prompts_file}')
+        text, prompt_id = wanted['text'], wanted['prompt_id']
+        domain = wanted.get('domain')
+    else:
+        text = 'Explain why the sky is blue in one short paragraph:'
+        prompt_id = 'sky_pilot'
+        domain = None
     ids = tok.apply_chat_template([{'role': 'user', 'content': text}],
                                   add_generation_prompt=True, return_tensors='pt').input_ids[0].tolist()
     sc = StreamCapture(str(model))
@@ -56,7 +77,8 @@ def main():
     records = [{'top8': [t.tolist() for t in r['top8']],
                 'scores8': [s.tolist() for s in r['scores8']]}
                for r in result['records']]
-    out = {'label': 'MEASURED', 'prompt_tokens': len(ids),
+    out = {'label': 'MEASURED', 'prompt_id': prompt_id, 'domain': domain,
+           'prompt_tokens': len(ids),
            'assumed_test_parameters': vars(args),
            'deterministic_algorithms': bool(args.deterministic),
            'delta_kernels': ('reference (forced)' if args.force_reference_kernels
