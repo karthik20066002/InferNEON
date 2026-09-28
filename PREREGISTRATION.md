@@ -46,4 +46,5 @@ commit recorded at the bottom; the content above it is frozen there.
 - top-8 of 256 experts, 40 layers, greedy, batch 1, seed 0, text-only,
   `palmfuture/Qwen3.6-35B-A3B-GPTQ-Int4` @ `00a66983516f8f8057741221277eed4141c9e431`.
 
-Ratified in: PENDING (filled immediately after the lock commit)
+Ratified in: 715c05bfa32ed3d824018a827c9517179520856a (content frozen here;
+this line was the only change after it — verify with `git show`)
