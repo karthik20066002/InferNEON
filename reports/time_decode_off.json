@@ -1,0 +1,73 @@
+{
+  "label": "MEASURED",
+  "mode": "off",
+  "assumed_test_parameters": {
+    "mode": "off",
+    "tokens": 24,
+    "cache_mib": 512,
+    "no_drop_caches": false,
+    "allow_dirty": false,
+    "out": null
+  },
+  "prompt_tokens": 22,
+  "decode_tokens": 24,
+  "page_cache_dropped": true,
+  "delta_kernels": "fast",
+  "versions": {
+    "torch": "2.14.0",
+    "transformers": "5.17.0",
+    "safetensors": "0.8.0",
+    "flash-linear-attention": "0.5.2",
+    "fla-core": "0.5.2",
+    "causal-conv1d": "1.7.0",
+    "einops": "0.8.2"
+  },
+  "git_commit": "d97b93e1007505d77a2edb313cd052796deae4f1",
+  "git_dirty": true,
+  "git_tracked_dirty": false,
+  "source_sha256": {
+    "capture/stream_capture.py": "ab7d6ae632b3770ed1982d4f7ddd5d1fc1751ea880a96ec1cbbf2b8a4c62f4eb",
+    "scripts/time_decode.py": "0f2ff9742041bc878e0bc310eda658d802ee3e77fe650938648c7d4933e90d1c"
+  },
+  "prefill_seconds": 55.99701890999859,
+  "decode_seconds_per_token": [
+    3.8640360639983555,
+    3.756083967997256,
+    3.702072126998246,
+    3.6781493239977863,
+    3.6922838160026004,
+    3.738727078998636,
+    3.635841387000255,
+    3.819388717001857,
+    3.8100192550009524,
+    3.8554114630023832,
+    3.7355249899992486,
+    3.7861978000000818,
+    3.65682177400231,
+    3.6127477989975887,
+    8.503877350998664,
+    3.78516014699926,
+    3.831805108999106,
+    3.8424842429994897,
+    3.8552799220015004,
+    3.7436450230015907,
+    3.7680662220009253,
+    3.7659577489976073,
+    3.777662476997648,
+    8.311588332999236
+  ],
+  "decode_median_seconds": 3.7728643494992866,
+  "decode_mean_seconds": 4.147034672458024,
+  "decode_min_seconds": 3.6127477989975887,
+  "decode_max_seconds": 8.503877350998664,
+  "peak_vram_bytes": 3847962624,
+  "cache": {
+    "max_bytes": 0,
+    "bytes": 0,
+    "entries": 0,
+    "hits": 0,
+    "misses": 7680,
+    "bypasses": 7680
+  },
+  "output_text": "Thinking Process:\n\n1.  **Deconstruct the query:**\n    *   Topic: Why the sky is blue"
+}

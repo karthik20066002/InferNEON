@@ -69,3 +69,28 @@ differences (e.g. LFU over LRU by 5 points) would be discarded as noise.
   8th-vs-9th full-softmax score gap per domain. Hypothesis: smaller gaps on
   low-resource scripts explain fragile routing (tamil_hindi: 7 prompts, so
   its 18.53% carries wide error bars regardless).
+
+## Amendment 2026-09-29 — calib/eval split, recall metric, Δ win rule
+
+No policy results exist; B0/B2 implementations live with Helen. This locks
+how they (and any candidate) will be scored, before any of them run.
+
+- Split: 15 calibration prompts (3/domain) for ALL fitting and tuning;
+  20 heldout prompts (4/domain) are the eval set, every domain in both.
+  B0 and B2 are built from calibration only. Eval prompts are never touched
+  during design; first contact is scoring.
+- Main metric: prefetch recall@k — fraction of the 8 routed experts present
+  in the first k predictions — at budgets k ∈ {8, 12}, pooled over eval
+  positions per trace. k=8 is exact-size prediction; k=12 allows 4 extra
+  loads. Rank-blind by construction: only set membership counts.
+- Win rule for recall gain Δ (candidate minus baseline), enforced by
+  `sim/metrics.py::beats_baseline` (unit-tested): (1) Δ positive on BOTH
+  traces; (2) min(Δ_ref, Δ_FLA) > |Δ_ref − Δ_FLA| (the smaller win must
+  exceed the cross-trace wobble of Δ itself); (3) 95% prompt-level
+  bootstrap CIs on Δ (resample the 20 eval prompts with replacement,
+  B=10,000, seed 0, pooled positions per replicate) exclude zero on BOTH.
+- Secondary: exact-set predictor accuracy (amendment-1 F rule: win on both
+  traces by > F) and per-domain recall/accuracy breakdowns.
+- The 87.16% cross-trace agreement is reported as the MEASUREMENT CEILING
+  (no cross-trace comparison can resolve what the traces don't share),
+  never as a baseline to beat.
