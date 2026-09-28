@@ -1,0 +1,157 @@
+{
+  "label": "MEASURED",
+  "pairs": 35,
+  "positions": 149640,
+  "set_drift_positions": 19221,
+  "F_set_drift": 0.12844827586206897,
+  "slot_drift": 0.11002906976744187,
+  "per_domain_set_drift": {
+    "chat": 0.1065424610051993,
+    "code": 0.0999219968798752,
+    "math": 0.09803082191780822,
+    "summarization": 0.10868617683686177,
+    "tamil_hindi": 0.18527728873239438
+  },
+  "per_prompt": {
+    "chat_calib_01": {
+      "positions": 3680,
+      "set_drift": 0.05733695652173913
+    },
+    "chat_calib_02": {
+      "positions": 3240,
+      "set_drift": 0.06450617283950617
+    },
+    "chat_calib_03": {
+      "positions": 3240,
+      "set_drift": 0.18888888888888888
+    },
+    "chat_held_01": {
+      "positions": 3840,
+      "set_drift": 0.12109375
+    },
+    "chat_held_02": {
+      "positions": 3640,
+      "set_drift": 0.0912087912087912
+    },
+    "chat_held_03": {
+      "positions": 2560,
+      "set_drift": 0.168359375
+    },
+    "chat_held_04": {
+      "positions": 2880,
+      "set_drift": 0.06909722222222223
+    },
+    "code_calib_01": {
+      "positions": 3520,
+      "set_drift": 0.11363636363636363
+    },
+    "code_calib_02": {
+      "positions": 3640,
+      "set_drift": 0.0912087912087912
+    },
+    "code_calib_03": {
+      "positions": 4240,
+      "set_drift": 0.06721698113207547
+    },
+    "code_held_01": {
+      "positions": 4000,
+      "set_drift": 0.10375
+    },
+    "code_held_02": {
+      "positions": 3800,
+      "set_drift": 0.09631578947368422
+    },
+    "code_held_03": {
+      "positions": 3120,
+      "set_drift": 0.09423076923076923
+    },
+    "code_held_04": {
+      "positions": 3320,
+      "set_drift": 0.14156626506024098
+    },
+    "math_calib_01": {
+      "positions": 4360,
+      "set_drift": 0.061467889908256884
+    },
+    "math_calib_02": {
+      "positions": 3320,
+      "set_drift": 0.10783132530120482
+    },
+    "math_calib_03": {
+      "positions": 2680,
+      "set_drift": 0.06940298507462686
+    },
+    "math_held_01": {
+      "positions": 3160,
+      "set_drift": 0.13449367088607594
+    },
+    "math_held_02": {
+      "positions": 3480,
+      "set_drift": 0.16551724137931034
+    },
+    "math_held_03": {
+      "positions": 3400,
+      "set_drift": 0.09441176470588235
+    },
+    "math_held_04": {
+      "positions": 2960,
+      "set_drift": 0.052702702702702706
+    },
+    "sum_calib_01": {
+      "positions": 6000,
+      "set_drift": 0.10183333333333333
+    },
+    "sum_calib_02": {
+      "positions": 4480,
+      "set_drift": 0.10625
+    },
+    "sum_calib_03": {
+      "positions": 5480,
+      "set_drift": 0.13193430656934307
+    },
+    "sum_held_01": {
+      "positions": 3600,
+      "set_drift": 0.06944444444444445
+    },
+    "sum_held_02": {
+      "positions": 3680,
+      "set_drift": 0.09320652173913044
+    },
+    "sum_held_03": {
+      "positions": 4760,
+      "set_drift": 0.13466386554621848
+    },
+    "sum_held_04": {
+      "positions": 4120,
+      "set_drift": 0.10849514563106796
+    },
+    "tamil_calib_01": {
+      "positions": 5840,
+      "set_drift": 0.1517123287671233
+    },
+    "tamil_calib_02": {
+      "positions": 6000,
+      "set_drift": 0.18033333333333335
+    },
+    "tamil_calib_03": {
+      "positions": 5560,
+      "set_drift": 0.22158273381294963
+    },
+    "tamil_held_01": {
+      "positions": 6600,
+      "set_drift": 0.13606060606060605
+    },
+    "tamil_held_02": {
+      "positions": 6960,
+      "set_drift": 0.20646551724137932
+    },
+    "tamil_held_03": {
+      "positions": 7400,
+      "set_drift": 0.22378378378378377
+    },
+    "tamil_held_04": {
+      "positions": 7080,
+      "set_drift": 0.17344632768361581
+    }
+  }
+}
