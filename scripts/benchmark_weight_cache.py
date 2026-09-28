@@ -7,19 +7,24 @@ measured timing and digests. Run from inferneon-eval with its venv Python.
 """
 import argparse
 import hashlib
-import importlib.metadata
 import json
 from pathlib import Path
-import subprocess
 import sys
 import time
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
+if '--force-reference-kernels' in sys.argv:
+    # Before capture.stream_capture pulls in the HF modeling module, whose
+    # fallback decorators bind fast vs reference kernels at import time.
+    from capture.provenance import block_fast_kernels
+    block_fast_kernels()
 import torch
 from transformers import AutoTokenizer
 from capture.stream_capture import StreamCapture
 from capture.weight_cache import WeightCache
+from capture.provenance import (package_versions, delta_kernel_path,
+                                require_clean_tree, file_hashes)
 
 FIELDS = ('h_in', 'h_postmix', 'router_input', 'top8', 'scores8', 'logits256')
 
@@ -151,10 +156,18 @@ def main():
                          'nondeterminism source; deterministic mode serializes it. '
                          'Other kernels (DeltaNet reference fallback) may still throw '
                          'or vary; the run records whatever happens.')
+    ap.add_argument('--allow-dirty', action='store_true',
+                    help='Run despite tracked modifications. Recorded in the output; '
+                         'default refuses so the commit hash describes the code.')
+    ap.add_argument('--force-reference-kernels', action='store_true',
+                    help='Block fla/causal_conv1d imports so transformers binds the '
+                         'reference DeltaNet path. For kernel-sensitivity runs only; '
+                         'never mix with fast-kernel traces.')
     args = ap.parse_args()
     if args.tokens < 1 or args.cache_mib < 1:
         ap.error('tokens and cache-mib must be positive')
     import os
+    gitstate = require_clean_tree(ROOT, args.allow_dirty, 'benchmark_weight_cache')
     torch.manual_seed(0)
     torch.backends.cuda.matmul.allow_tf32 = False
     torch.backends.cudnn.deterministic = bool(args.deterministic)
@@ -186,17 +199,19 @@ def main():
     output = {'label': 'MEASURED', 'prompt': text, 'prompt_tokens': len(ids),
               'assumed_test_parameters': vars(args), 'seed': 0,
               'deterministic_algorithms': deterministic,
-              'versions': {k: importlib.metadata.version(k) for k in
-                           ('torch', 'transformers', 'safetensors')},
+              'allowed_dirty_run': bool(args.allow_dirty),
+              'delta_kernels': ('reference (forced)' if args.force_reference_kernels
+                                else delta_kernel_path()),
+              'versions': package_versions(),
+              'git_commit': gitstate['git_commit'],
+              'git_dirty': gitstate['git_dirty'],
+              'git_tracked_dirty': gitstate['git_tracked_dirty'],
               'checkpoint_config_sha256': hashlib.sha256((model/'config.json').read_bytes()).hexdigest(),
-              'source_sha256': {str(p.relative_to(ROOT)): hashlib.sha256(p.read_bytes()).hexdigest()
-                                for p in (ROOT/'capture/stream_capture.py', ROOT/'capture/dequant.py',
-                                          ROOT/'capture/weight_cache.py', Path(__file__))},
+              'source_sha256': file_hashes(ROOT,
+                                           ['capture/stream_capture.py', 'capture/dequant.py',
+                                            'capture/weight_cache.py', 'capture/provenance.py',
+                                            'scripts/benchmark_weight_cache.py']),
               'runs': {}}
-    commit = subprocess.run(['git', 'rev-parse', '--verify', 'HEAD'], cwd=ROOT,
-                            capture_output=True, text=True)
-    output['git_commit'] = commit.stdout.strip() if commit.returncode == 0 else None
-    output['git_dirty'] = bool(subprocess.check_output(['git', 'status', '--porcelain'], cwd=ROOT))
     output['cublas_workspace_config'] = cublas_cfg
     output['deterministic_algorithms_enabled'] = torch.are_deterministic_algorithms_enabled()
     output['timing_note'] = (
