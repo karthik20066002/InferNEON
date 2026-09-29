@@ -1,3 +1,17 @@
-W0929 14:06:28.574000 7194 .venv/lib/python3.12/site-packages/torch/utils/_pytree.py:630] <enum 'KernelPreference'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
-W0929 14:06:28.595000 7194 .venv/lib/python3.12/site-packages/torch/utils/_pytree.py:630] <enum 'ScaleCalculationMode'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
-capture_decode: refusing to run: tracked code is modified (commit c4d64e2b1a06ea2ae39302848dd40ddb63c18f54 does not describe this tree). Commit first, or pass --allow-dirty (recorded in the output).
+W0929 14:27:50.989000 11198 .venv/lib/python3.12/site-packages/torch/utils/_pytree.py:630] <enum 'KernelPreference'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+W0929 14:27:51.016000 11198 .venv/lib/python3.12/site-packages/torch/utils/_pytree.py:630] <enum 'ScaleCalculationMode'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+math_calib_03: resuming at token 0/194 (66 prompt + 128 decode)
+  math_calib_03 decode 1/128 token=8160
+  math_calib_03 decode 2/128 token=579
+  math_calib_03 decode 3/128 token=264
+  math_calib_03 decode 4/128 token=7047
+  math_calib_03 decode 5/128 token=1817
+  math_calib_03 decode 6/128 token=25
+  math_calib_03 decode 7/128 token=271
+  math_calib_03 decode 8/128 token=16
+  math_calib_03 decode 9/128 token=13
+  math_calib_03 decode 10/128 token=220
+  math_calib_03 decode 11/128 token=2972
+  math_calib_03 decode 12/128 token=15771
+  math_calib_03 decode 13/128 token=2598
+  math_calib_03 decode 14/128 token=2570

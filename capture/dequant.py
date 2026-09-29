@@ -49,14 +49,23 @@ def dequant_linear(
     g_idx: torch.Tensor,
     out_dtype: torch.dtype = torch.float16,
 ) -> torch.Tensor:
-    """Dequantize one [in, out] linear to out_dtype. Asserts g_idx identity."""
+    """Dequantize one [in, out] linear to out_dtype. Asserts g_idx identity.
+
+    Math runs in float32 (not float64): bit-identical output, ~2x faster.
+    Exactness argument: q/z are small ints (nibbles, exact in any float),
+    (q-z) needs <=5 bits, scales are fp16 values (<=11 significant bits),
+    so (q-z)*s needs <=16 significant bits < 24 (fp32) — the product is
+    EXACT in both fp32 and fp64, and both round the same true value to
+    out_dtype. Verified empirically by scripts/validate_gptq_dequant.py
+    and the deterministic digest runs.
+    """
     in_f, out_f = qweight.shape[0] * PACK, qweight.shape[1]
     assert bool(((g_idx == torch.arange(in_f) // GROUP).all())), "non-identity g_idx"
-    q = unpack_rows(qweight).to(torch.float64)
+    q = unpack_rows(qweight).to(torch.float32)
     # GPTQ v1 stores logical_zero - 1 on disk; match the loader's v1->v2
     # conversion before dequantization.
-    z = unpack_cols(qzeros).to(torch.float64) + 1.0
-    s = scales.to(torch.float64)
+    z = unpack_cols(qzeros).to(torch.float32) + 1.0
+    s = scales.to(torch.float32)
     g = torch.arange(in_f) // GROUP
     return ((q - z[g]) * s[g]).to(out_dtype)
 

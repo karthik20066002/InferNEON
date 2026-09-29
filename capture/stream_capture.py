@@ -43,7 +43,10 @@ PREFIX = "model.language_model."
 # cache: same checkpoint bytes always yield identical fp16, so hits cannot
 # change numerics; eviction only costs recompute. Callers MUST NOT mutate
 # returned tensors (all current uses copy onward: .to(dev), .T, copy_).
-MEMO_MAX_BYTES = 1536 * 1024**2
+# Sized 4 GiB: one decode token's expert set is ~1.9 GiB, so the cap holds
+# ~2 tokens and converts adjacent-token locality into hits (measured
+# per-prompt unions are far larger; no RAM cap fixes that, only overlap).
+MEMO_MAX_BYTES = 4 * 1024**3
 
 
 class StreamCapture:
