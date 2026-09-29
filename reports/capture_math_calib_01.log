@@ -1,0 +1,44 @@
+W0929 13:39:51.930000 224499 .venv/lib/python3.12/site-packages/torch/utils/_pytree.py:630] <enum 'KernelPreference'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+W0929 13:39:51.963000 224499 .venv/lib/python3.12/site-packages/torch/utils/_pytree.py:630] <enum 'ScaleCalculationMode'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+math_calib_01: resuming at token 0/236 (108 prompt + 128 decode)
+  math_calib_01 decode 1/128 token=8160
+  math_calib_01 decode 2/128 token=579
+  math_calib_01 decode 3/128 token=264
+  math_calib_01 decode 4/128 token=7047
+  math_calib_01 decode 5/128 token=1817
+  math_calib_01 decode 6/128 token=25
+  math_calib_01 decode 7/128 token=271
+  math_calib_01 decode 8/128 token=16
+  math_calib_01 decode 9/128 token=13
+  math_calib_01 decode 10/128 token=220
+  math_calib_01 decode 11/128 token=2972
+  math_calib_01 decode 12/128 token=15771
+  math_calib_01 decode 13/128 token=2598
+  math_calib_01 decode 14/128 token=2570
+  math_calib_01 decode 15/128 token=5952
+  math_calib_01 decode 16/128 token=64700
+  math_calib_01 decode 17/128 token=198
+  math_calib_01 decode 18/128 token=256
+  math_calib_01 decode 19/128 token=471
+  math_calib_01 decode 20/128 token=2972
+  math_calib_01 decode 21/128 token=38663
+  math_calib_01 decode 22/128 token=64700
+  math_calib_01 decode 23/128 token=12376
+  math_calib_01 decode 24/128 token=520
+  math_calib_01 decode 25/128 token=3481
+  math_calib_01 decode 26/128 token=23683
+  math_calib_01 decode 27/128 token=7575
+  math_calib_01 decode 28/128 token=5639
+  math_calib_01 decode 29/128 token=791
+  math_calib_01 decode 30/128 token=3817
+  math_calib_01 decode 31/128 token=364
+  math_calib_01 decode 32/128 token=264
+  math_calib_01 decode 33/128 token=220
+  math_calib_01 decode 34/128 token=19
+  math_calib_01 decode 35/128 token=15
+  math_calib_01 decode 36/128 token=45759
+  math_calib_01 decode 37/128 token=1844
+  math_calib_01 decode 38/128 token=12
+  math_calib_01 decode 39/128 token=23
+  math_calib_01 decode 40/128 token=5861
+  math_calib_01 decode 41/128 token=36
