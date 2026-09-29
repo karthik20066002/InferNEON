@@ -118,8 +118,12 @@ class LRU(Policy):
         if not hit:
             missing = [k for k in sorted(need) if k not in self.resident]
             self.stats.missed_experts += len(missing)
+            # The demanded set is pinned during its own demand: eviction
+            # must never drop a key this demand needs (it would neither be
+            # re-added nor findable afterwards).
             while len(self.resident) + len(missing) > self.cap:
-                self.resident.popitem(last=False)
+                oldest = next(k for k in self.resident if k not in need)
+                del self.resident[oldest]
             for k in missing:
                 self.resident[k] = None
         for k in sorted(need):
@@ -155,7 +159,7 @@ class LFU(Policy):
             missing = sorted(need - self.resident)
             self.stats.missed_experts += len(missing)
             while len(self.resident) + len(missing) > self.cap:
-                self.resident.discard(self._victim())
+                self.resident.discard(self._victim(protected=need))
             self.resident.update(missing)
         return hit
 
@@ -200,11 +204,12 @@ class LeastStale(Policy):
             self.stats.missed_experts += len(missing)
             while len(self.resident) + len(missing) > self.cap:
                 stale = [(p, s, k) for k, (p, s) in self.resident.items()
-                         if p < pass_id]
+                         if p < pass_id and k not in need]
                 if stale:
                     _, _, victim = min(stale)
                 else:
-                    victim = min(self.resident,
+                    cands = [k for k in self.resident if k not in need]
+                    victim = min(cands,
                                  key=lambda k: (self.resident[k][0], self.resident[k][1]))
                 del self.resident[victim]
             for k in missing:
@@ -258,7 +263,7 @@ class _TieredBase(Policy):
             self.top.add(cand)
             self.bottom.add(cold)
 
-    def _evict_bottom(self, n, pass_id):
+    def _evict_bottom(self, n, pass_id, need):
         raise NotImplementedError
 
     def demand(self, keys, pass_id):
@@ -274,7 +279,7 @@ class _TieredBase(Policy):
             missing = sorted(need - resident)
             self.stats.missed_experts += len(missing)
             while len(self.top) + len(self.bottom) + len(missing) > self.cap:
-                self._evict_bottom(1, pass_id)
+                self._evict_bottom(1, pass_id, need)
             for k in missing:
                 self.bottom.add(k)
                 self.passtag[k] = pass_id
@@ -295,9 +300,10 @@ class HelenDual(_TieredBase):
                      + ('-halved' if halving_events else '-lifetime')
                      + ('-log' if log_heat else ''))
 
-    def _evict_bottom(self, n, pass_id):
+    def _evict_bottom(self, n, pass_id, need):
         for _ in range(n):
-            victim = min(self.bottom,
+            pool = [k for k in self.bottom if k not in need]
+            victim = min(pool,
                          key=lambda k: self.store.retention(k, self.recency_scale))
             self.bottom.discard(victim)
             self.passtag.pop(victim, None)
@@ -321,10 +327,11 @@ class HybridStaleHeat(_TieredBase):
                      + ('-halved' if halving_events else '-lifetime')
                      + ('-log' if log_heat else ''))
 
-    def _evict_bottom(self, n, pass_id):
+    def _evict_bottom(self, n, pass_id, need):
         for _ in range(n):
-            stale = [k for k in self.bottom if self.passtag.get(k, -1) < pass_id]
-            pool = stale or list(self.bottom)
+            stale = [k for k in self.bottom
+                     if self.passtag.get(k, -1) < pass_id and k not in need]
+            pool = stale or [k for k in self.bottom if k not in need]
             victim = min(pool, key=self._heat)
             self.bottom.discard(victim)
             self.passtag.pop(victim, None)

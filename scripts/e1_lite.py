@@ -12,6 +12,7 @@ import json
 import os
 import sys
 import time
+from multiprocessing import Pool
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from sim.engine import events_from_routed
@@ -54,26 +55,44 @@ def policies(cap):
 
 def main():
     out = {'label': 'PRELIMINARY (see caveats)', 'capacities': list(CAPS),
-           'expert_bytes': EXPERT_BYTES, 'results': {}}
+           'expert_bytes': EXPERT_BYTES, 'results': {}, 'workers': 6}
+    # One pool per trace so each worker holds a single trace in RAM
+    # (~400MB parsed); tasks are (cap, policy) pairs, results identical
+    # to serial execution (deterministic policies, no shared state).
     for kind in ('ref', 'fla'):
         t0 = time.perf_counter()
-        events = load_trace(kind)
-        out[f'{kind}_positions'] = len(events)
-        for cap in CAPS:
-            for pol in policies(cap):
-                st = pol.run(events)
-                n = len(events)
-                row = {'hit_rate': st.hit_rate(),
-                       'bytes_per_token': pol.bytes_read() / (n / 40),
-                       'missed_experts': st.missed_experts}
-                out['results'].setdefault(pol.name, {})[f'{kind}@{cap}'] = row
-                print(f'{kind} cap={cap} {pol.name:24s} hit={row["hit_rate"]:.4f} '
-                      f'B/tok={row["bytes_per_token"]:.0f}', flush=True)
-        print(f'{kind}: {len(events)} positions in {time.perf_counter()-t0:.0f}s',
-              flush=True)
+        with Pool(6, initializer=_init, initargs=(kind,)) as pool:
+            tasks = [(cap, i) for cap in CAPS
+                     for i in range(len(policies(cap)))]
+            for row in pool.imap_unordered(_task, tasks):
+                name, cap, hit, btok, missed = row
+                out['results'].setdefault(name, {})[f'{kind}@{cap}'] = {
+                    'hit_rate': hit, 'bytes_per_token': btok,
+                    'missed_experts': missed}
+                print(f'{kind} cap={cap} {name:24s} hit={hit:.4f} '
+                      f'B/tok={btok:.0f}', flush=True)
+        print(f'{kind} done in {time.perf_counter()-t0:.0f}s', flush=True)
     with open(os.path.join(DIR, 'e1_lite.json'), 'w') as f:
         json.dump(out, f, indent=2)
     print('wrote e1_lite.json')
+
+
+_EVENTS = None
+
+
+def _init(kind):
+    global _EVENTS
+    _EVENTS = load_trace(kind)
+    print(f'worker loaded {kind}: {len(_EVENTS)} positions', flush=True)
+
+
+def _task(args):
+    cap, idx = args
+    pol = policies(cap)[idx]
+    st = pol.run(_EVENTS)
+    n = len(_EVENTS)
+    return (pol.name, cap, st.hit_rate(),
+            pol.bytes_read() / (n / 40), st.missed_experts)
 
 
 if __name__ == '__main__':

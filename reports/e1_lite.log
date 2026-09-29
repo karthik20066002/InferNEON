@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "/home/axiss/Documents/projects/InferNEON/inferneon-eval/scripts/e1_lite.py", line 80, in <module>
+    main()
+  File "/home/axiss/Documents/projects/InferNEON/inferneon-eval/scripts/e1_lite.py", line 64, in main
+    st = pol.run(events)
+         ^^^^^^^^^^^^^^^
+  File "/home/axiss/Documents/projects/InferNEON/inferneon-eval/sim/eviction.py", line 98, in run
+    hit = self.demand(keys, pass_id)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/axiss/Documents/projects/InferNEON/inferneon-eval/sim/eviction.py", line 126, in demand
+    self.resident.move_to_end(k)
+KeyError: (2, 85)

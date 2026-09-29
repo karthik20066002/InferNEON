@@ -77,6 +77,22 @@ class EvictionTests(unittest.TestCase):
         # same expert id, different layer: still a miss
         self.assertFalse(p.demand(frozenset({(1, 1)}), 1))
 
+    def test_demanded_set_pinned_during_eviction(self):
+        # Regression: a demanded key that happens to be eviction-oldest
+        # must survive its own demand (was KeyError in LRU, silent drop
+        # in the others). Exercises every contender.
+        from sim.eviction import HelenDual, HybridStaleHeat
+        for cls in (LRU, LFU, LFUHalving, LeastStale,
+                    lambda c: HelenDual(c), lambda c: HybridStaleHeat(c)):
+            p = cls(8)
+            p.demand(frozenset(range(8)), 0)
+            # demand reuses oldest key 0 plus 7 unseen: must not crash,
+            # and 0 must still be resident afterwards
+            p.demand(frozenset([0] + list(range(100, 107))), 1)
+            resident = (set(p.resident) if hasattr(p, 'resident')
+                        else p.top | p.bottom)
+            self.assertIn(0, resident)
+
 
 if __name__ == '__main__':
     unittest.main()
