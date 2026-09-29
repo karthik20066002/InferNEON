@@ -1,0 +1,228 @@
+{
+  "label": "MEASURED",
+  "prompt": "Explain why the sky is blue in one short paragraph:",
+  "prompt_tokens": 22,
+  "assumed_test_parameters": {
+    "tokens": 1,
+    "cache_mib": 512,
+    "out": "reports/weight_cache_r2_det.json",
+    "deterministic": true,
+    "allow_dirty": false,
+    "force_reference_kernels": false
+  },
+  "seed": 0,
+  "deterministic_algorithms": true,
+  "allowed_dirty_run": false,
+  "delta_kernels": "fast",
+  "versions": {
+    "torch": "2.14.0",
+    "transformers": "5.17.0",
+    "safetensors": "0.8.0",
+    "flash-linear-attention": "0.5.2",
+    "fla-core": "0.5.2",
+    "causal-conv1d": "1.7.0",
+    "einops": "0.8.2"
+  },
+  "git_commit": "d73274e6649221d7b9ebe1e5bba688c2b36e2f10",
+  "git_dirty": true,
+  "git_tracked_dirty": false,
+  "checkpoint_config_sha256": "cd5eb69082a3203396a50e88eb3d259799f4f90209104313ac33ffae19a5fb56",
+  "source_sha256": {
+    "capture/stream_capture.py": "ec117ae4265aca6f4644b7e544bee49fa8e6ff4a71f4360b631e47a4a93a95f4",
+    "capture/dequant.py": "14d903b3a0cba1c1efc5a9b9852847ce089cf71c720f3778f2e6fae20f8632ac",
+    "capture/weight_cache.py": "e572ec8e612c9a032b5fe6bb875fde5d5fdc32f86a24a6e01987a2fdc647055f",
+    "capture/provenance.py": "379c11657c6c31cfbf9c4389aec72ada00bba7d37fadcbe5a88a2ca64d43fd78",
+    "scripts/benchmark_weight_cache.py": "8a8f5e55589b255a57c940d8d7ad04027b64fd010bf0cc6129efb7b6e9d1361c"
+  },
+  "runs": {
+    "off1": {
+      "prefill_seconds": 38.899567971000124,
+      "decode_seconds": [
+        8.31943016599962
+      ],
+      "tokens": [
+        90700
+      ],
+      "cache": {
+        "max_bytes": 0,
+        "bytes": 0,
+        "entries": 0,
+        "hits": 0,
+        "misses": 320,
+        "bypasses": 320
+      },
+      "peak_vram_bytes": 3872914432,
+      "logits_sha256": "de6811036424de8ce3b72eb7c7aedf050cb07c6bdf881440b4526321fc676ede",
+      "is_uncached_repeat": true,
+      "logits_equal_off1": true,
+      "routes_exactly_equal_off1": true,
+      "exact_vs_uncached": true,
+      "router_pairs_validated": 920
+    },
+    "off2": {
+      "prefill_seconds": 28.819170141000086,
+      "decode_seconds": [
+        11.046731466999972
+      ],
+      "tokens": [
+        90700
+      ],
+      "cache": {
+        "max_bytes": 0,
+        "bytes": 0,
+        "entries": 0,
+        "hits": 0,
+        "misses": 320,
+        "bypasses": 320
+      },
+      "peak_vram_bytes": 3872914432,
+      "logits_sha256": "de6811036424de8ce3b72eb7c7aedf050cb07c6bdf881440b4526321fc676ede",
+      "is_uncached_repeat": true,
+      "logits_equal_off1": true,
+      "routes_exactly_equal_off1": true,
+      "exact_vs_uncached": true,
+      "router_pairs_validated": 920,
+      "comparison_vs_off1": {
+        "max_logit_delta": 0.0,
+        "max_hidden_delta": 0.0,
+        "max_router_delta": 0.0,
+        "lm_argmax_same": 2,
+        "lm_argmax_total": 2,
+        "route_mismatch_count": 0,
+        "route_mismatches": [],
+        "expert_diff_histogram": {},
+        "eighth_only_mismatches": 0,
+        "order_only_mismatches": 0,
+        "per_layer_mismatch_counts": {}
+      }
+    },
+    "cold": {
+      "prefill_seconds": 29.451181154000096,
+      "decode_seconds": [
+        5.471648487000039
+      ],
+      "tokens": [
+        90700
+      ],
+      "cache": {
+        "max_bytes": 536870912,
+        "bytes": 534773760,
+        "entries": 85,
+        "hits": 0,
+        "misses": 320,
+        "bypasses": 235
+      },
+      "peak_vram_bytes": 4407300096,
+      "logits_sha256": "de6811036424de8ce3b72eb7c7aedf050cb07c6bdf881440b4526321fc676ede",
+      "is_uncached_repeat": false,
+      "logits_equal_off1": true,
+      "routes_exactly_equal_off1": true,
+      "exact_vs_uncached": true,
+      "router_pairs_validated": 920,
+      "comparison_vs_off1": {
+        "max_logit_delta": 0.0,
+        "max_hidden_delta": 0.0,
+        "max_router_delta": 0.0,
+        "lm_argmax_same": 2,
+        "lm_argmax_total": 2,
+        "route_mismatch_count": 0,
+        "route_mismatches": [],
+        "expert_diff_histogram": {},
+        "eighth_only_mismatches": 0,
+        "order_only_mismatches": 0,
+        "per_layer_mismatch_counts": {}
+      }
+    },
+    "warm": {
+      "prefill_seconds": 26.508945971999765,
+      "decode_seconds": [
+        3.3831753250001384
+      ],
+      "tokens": [
+        90700
+      ],
+      "cache": {
+        "max_bytes": 536870912,
+        "bytes": 534773760,
+        "entries": 85,
+        "hits": 85,
+        "misses": 555,
+        "bypasses": 470
+      },
+      "peak_vram_bytes": 4407688192,
+      "logits_sha256": "de6811036424de8ce3b72eb7c7aedf050cb07c6bdf881440b4526321fc676ede",
+      "is_uncached_repeat": false,
+      "logits_equal_off1": true,
+      "routes_exactly_equal_off1": true,
+      "exact_vs_uncached": true,
+      "router_pairs_validated": 920,
+      "comparison_vs_off1": {
+        "max_logit_delta": 0.0,
+        "max_hidden_delta": 0.0,
+        "max_router_delta": 0.0,
+        "lm_argmax_same": 2,
+        "lm_argmax_total": 2,
+        "route_mismatch_count": 0,
+        "route_mismatches": [],
+        "expert_diff_histogram": {},
+        "eighth_only_mismatches": 0,
+        "order_only_mismatches": 0,
+        "per_layer_mismatch_counts": {}
+      }
+    }
+  },
+  "cublas_workspace_config": ":4096:8",
+  "deterministic_algorithms_enabled": true,
+  "timing_note": "Single-run prefill/decode seconds are diagnostics only, not a cache speedup claim. Observed uncached variance alone (decode ~5.2s vs ~8.8s, prefill ~50-77s across runs) exceeds any weight-cache effect at this token count. Do not cite a cache speedup from this script.",
+  "cached_tensor_digests_unchanged": true,
+  "cached_entries_checked": 85,
+  "cache_corruption_check": {
+    "cold": {
+      "natural_repeat_mismatches": [],
+      "observed_mismatches": [],
+      "new_mismatches_beyond_off_repeat": []
+    },
+    "warm": {
+      "natural_repeat_mismatches": [],
+      "observed_mismatches": [],
+      "new_mismatches_beyond_off_repeat": []
+    },
+    "envelope": {
+      "cold": {
+        "route_count_same_as_uncached_repeat": true,
+        "lm_argmax_same": true,
+        "all_finite": true,
+        "logits_equal_off1": true,
+        "routes_exactly_equal_off1": true,
+        "max_logit_delta": 0.0,
+        "max_hidden_delta": 0.0,
+        "max_router_delta": 0.0,
+        "eighth_only_mismatches": 0,
+        "expert_diff_histogram": {},
+        "order_only_mismatches": 0,
+        "per_layer_mismatch_counts": {}
+      },
+      "warm": {
+        "route_count_same_as_uncached_repeat": true,
+        "lm_argmax_same": true,
+        "all_finite": true,
+        "logits_equal_off1": true,
+        "routes_exactly_equal_off1": true,
+        "max_logit_delta": 0.0,
+        "max_hidden_delta": 0.0,
+        "max_router_delta": 0.0,
+        "eighth_only_mismatches": 0,
+        "expert_diff_histogram": {},
+        "order_only_mismatches": 0,
+        "per_layer_mismatch_counts": {}
+      }
+    },
+    "position_sets_identical": {
+      "cold": true,
+      "warm": true
+    }
+  },
+  "deterministic_baseline_achieved": true,
+  "output_text": "Thinking",
+  "status": "PASS"
+}
