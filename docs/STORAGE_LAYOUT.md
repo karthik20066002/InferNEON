@@ -86,3 +86,20 @@ TODO, not covered by this profile.
   hard boot error, not a silent misalignment.
 - Real CM4 eMMC erase-group/block geometry and PCIe Gen2 x1 ceilings are the
   eventual target, not now — same layout, different width/backend.
+
+## 7. Non-expert region + directory (`tools/pack_olmoe_full.py`, disk-olmoe-full.img)
+
+- The expert blob is unchanged (§1–§3). Everything else the forward pass
+  needs lives AFTER the expert region, described by a directory at FIXED
+  LBA 1 (512 B): `magic2 u32 = 0x0000AE87`, `count u32`, then per entry
+  `tag u32, offset u64, len u64, dtype u32` (dtype 0 = bf16, 1 = fp32).
+- Tags: 1 embed [50304,2048] bf16; 2 routers 16×[64,2048] bf16; 3 norms
+  33×[2048] as stored (bf16); 4 attn per-layer q,k,v,o [4,2048,2048] bf16;
+  5 head [50304,2048] bf16; 6 rope_cos [16,64] fp32; 7 rope_sin [16,64]
+  fp32; 8 qk_norms 32×[2048] bf16 (rows q0,k0,q1,k1…).
+- RoPE tables are host-exact fp32 (theta 10000, head_dim 128, Llama-style
+  half rotation — validated against transformers); firmware trig was
+  rejected (Taylor error ~0.2 at π flips routes).
+- MAXPOS = 16 tokens (prompt + short decode + margin); KV sized to match.
+- Rationale: LBA-0 format untouched (old images still boot to the storage
+  probe); the kernel finds the directory without trusting any offset.

@@ -6,9 +6,12 @@ use crate::config::MAX_K;
 use crate::exec::MatmulOutput;
 
 /// Weighted-sum reduction of the k matmul outputs into the next hidden state.
-/// TODO: gating weights + accumulate (NEON later); single-core sums in place.
+/// v1 single-core: the running firmware inlines this accumulation directly
+/// in infer.rs (weights × expert outputs + residual). This symbol becomes
+/// the real barrier join when N-core lands; until then it must not be
+/// called (nothing calls it — verified by grep at wiring time).
 pub fn join_combine(_outputs: &[MatmulOutput], _k: usize, _hidden_out: &mut [f32]) {
-    todo!("combine::join_combine — barrier on matmul outputs")
+    todo!("combine::join_combine — N-core barrier join; v1 accumulates inline in infer.rs")
 }
 
 /// Barrier state stub for the join (reusable across layers via generation).
@@ -23,8 +26,9 @@ impl JoinBarrier {
         Self { expected }
     }
 
-    /// TODO: block until `expected` outputs have arrived, then release.
+    /// Single core: arrival == release; returns immediately. Becomes a real
+    /// blocking barrier under N-core.
     pub fn wait_for_outputs(&self, _arrived: usize) {
-        todo!("combine::JoinBarrier::wait_for_outputs")
+        let _ = self.expected;
     }
 }

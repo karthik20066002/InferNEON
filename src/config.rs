@@ -87,3 +87,16 @@ const fn parse_usize(opt: Option<&str>) -> Option<usize> {
 pub const LAYER_TABLE_MAGIC: u32 = 0x0000_AE86;
 /// Fixed root: LBA 0 / byte offset 0 of the flat blob.
 pub const LAYER_TABLE_LBA: u64 = 0;
+/// Directory block: FIXED LBA 1 (magic2, count, tag/offset/len/dtype entries).
+/// Written by tools/pack_olmoe_full.py; backward compatible with LBA-0-only images.
+pub const DIR_LBA: u64 = 1;
+pub const DIR_MAGIC: u32 = 0x0000_AE87;
+/// OLMoE-1B-7B geometry (firmware decode path; Qwen profile needs its own).
+pub const NUM_HEADS: usize = 16;
+pub const NUM_KV_HEADS: usize = 16;
+pub const HEAD_DIM: usize = 128;
+pub const VOCAB_SIZE: usize = 50304;
+pub const MAX_TOKENS: usize = 16;
+/// Prompt under test: "The sky is blue" (OLMoE tokenizer), +3 greedy decode.
+pub const PROMPT_IDS: [u32; 4] = [510, 8467, 310, 4797];
+pub const DECODE_STEPS: usize = 3;

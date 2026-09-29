@@ -18,9 +18,27 @@ impl ExpertSet {
         Self { ids: [None; MAX_K], len: 0 }
     }
 
-    /// Build from `gating` output prefix `k`. TODO: dedup + overflow check.
-    pub fn from_top_k(_ids: &[ExpertId], _k: usize) -> Self {
-        todo!("dispatch::ExpertSet::from_top_k")
+    /// Build from `gating` output prefix `k`. Deduplicates defensively.
+    pub fn from_top_k(ids: &[ExpertId], k: usize) -> Self {
+        assert!(k <= MAX_K);
+        let mut set = Self::empty();
+        for id in ids.iter().take(k) {
+            if set.len >= MAX_K {
+                break;
+            }
+            let mut dup = false;
+            for slot in set.ids.iter().take(set.len) {
+                if *slot == Some(*id) {
+                    dup = true;
+                    break;
+                }
+            }
+            if !dup {
+                set.ids[set.len] = Some(*id);
+                set.len += 1;
+            }
+        }
+        set
     }
 
     pub fn len(&self) -> usize {
@@ -41,7 +59,7 @@ impl ExpertSet {
 pub struct CoreMask(pub u64);
 
 /// Decide which core(s) run each expert in the set.
-/// TODO: single-core returns CoreMask(1); N-core shards ExpertSet across cores.
+/// v1 single-core: everything on core 0. N-core sharding is future work.
 pub fn assign_cores(_set: &ExpertSet) -> CoreMask {
-    todo!("dispatch::assign_cores")
+    CoreMask(1)
 }

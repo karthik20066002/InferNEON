@@ -17,9 +17,12 @@ mod combine;
 mod config;
 mod dispatch;
 mod exec;
+mod fetch;
 mod gate;
 mod head;
+mod infer;
 mod layer;
+mod nnmath;
 mod pipeline;
 mod storage;
 mod sync;
@@ -46,10 +49,51 @@ pub extern "C" fn kernel_main() -> ! {
     uart::print(crate::config::MODEL_NAME);
     uart::print("\n");
     storage_probe();
-    pipeline::run_stub();
+    match boot_fetch_and_run() {
+        Ok(n) => {
+            uart::print("generated: ");
+            uart::print_hex_u32(n as u32);
+            uart::print(" tokens\n");
+        }
+        Err(_) => {
+            uart::print("infer: FAIL\n");
+        }
+    }
     loop {
         crate::sync::park();
     }
+}
+
+/// Directory + resident pinning, then the wired generation loop.
+/// Prints each generated token id as hex (host decodes via tokenizer.json).
+fn boot_fetch_and_run() -> Result<usize, ()> {
+    use storage::BlockStorage;
+    let mut blk = storage::virtio::VirtioBlk::new();
+    blk.init().map_err(|_| ())?;
+    // layer bases from the LBA-0 table (16 u64 entries at byte 16)
+    let mut lba0 = [0u8; 512];
+    blk.read_blocks(crate::config::LAYER_TABLE_LBA, &mut lba0).map_err(|_| ())?;
+    let mut bases = [0u64; 16];
+    for li in 0..16usize {
+        let o = 16 + li * 8;
+        bases[li] = u64::from_le_bytes([
+            lba0[o], lba0[o + 1], lba0[o + 2], lba0[o + 3], lba0[o + 4], lba0[o + 5],
+            lba0[o + 6], lba0[o + 7],
+        ]);
+    }
+    fetch::read_dir(&mut blk)?;
+    fetch::pin_resident(&mut blk)?;
+    uart::print("resident pinned\n");
+    if !crate::exec::selftest() {
+        uart::print("exec selftest: FAIL\n");
+        return Err(());
+    }
+    uart::print("exec selftest: PASS\n");
+    // expert stride from the header (bytes 8..12)
+    let stride = u32::from_le_bytes([lba0[8], lba0[9], lba0[10], lba0[11]]) as u64;
+    let mut out = [0u32; 8];
+    let n = infer::run(&mut blk, &bases, stride, &mut out)?;
+    Ok(n)
 }
 
 /// Bring up virtio-blk and validate the LBA-0 layer table.

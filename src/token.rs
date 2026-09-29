@@ -36,11 +36,23 @@ impl<const N: usize> ArrayTokenQueue<N> {
 }
 
 impl<const N: usize> TokenQueue for ArrayTokenQueue<N> {
-    fn enqueue(&mut self, _token: TokenId) -> bool {
-        todo!("token::ArrayTokenQueue::enqueue")
+    fn enqueue(&mut self, token: TokenId) -> bool {
+        if self.count >= N {
+            return false;
+        }
+        self.buf[self.tail] = Some(token);
+        self.tail = (self.tail + 1) % N;
+        self.count += 1;
+        true
     }
     fn dequeue(&mut self) -> Option<TokenId> {
-        todo!("token::ArrayTokenQueue::dequeue")
+        if self.count == 0 {
+            return None;
+        }
+        let t = self.buf[self.head].take();
+        self.head = (self.head + 1) % N;
+        self.count -= 1;
+        t
     }
     fn is_empty(&self) -> bool {
         self.count == 0
