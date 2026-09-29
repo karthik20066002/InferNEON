@@ -37,10 +37,9 @@ def load_events():
                 continue
             recs.append(d)
         for rec in recs:
-            keys = frozenset()
             for li, ids in enumerate(rec['top8']):
-                keys |= frozenset((li, int(e)) for e in ids)
-            events.append((len(events) // 40, keys))
+                keys = frozenset((li, int(e)) for e in ids)
+                events.append((len(events) // 40, keys))
     return events
 
 
