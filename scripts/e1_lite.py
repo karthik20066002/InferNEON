@@ -14,6 +14,11 @@ import sys
 import time
 from multiprocessing import Pool
 
+# Workers default to 3, not core count: sustained all-core burn pushes this
+# laptop past 100C into firmware thermal shutdown (measured 2026-09-29).
+# Throughput scales ~linearly; heat does not need to. Override with E1_WORKERS.
+WORKERS = int(os.environ.get('E1_WORKERS', '3'))
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from sim.engine import events_from_routed
 from sim.eviction import (LRU, LFU, LFUHalving, LeastStale, HelenDual,
@@ -55,13 +60,13 @@ def policies(cap):
 
 def main():
     out = {'label': 'PRELIMINARY (see caveats)', 'capacities': list(CAPS),
-           'expert_bytes': EXPERT_BYTES, 'results': {}, 'workers': 6}
+           'expert_bytes': EXPERT_BYTES, 'results': {}, 'workers': WORKERS}
     # One pool per trace so each worker holds a single trace in RAM
     # (~400MB parsed); tasks are (cap, policy) pairs, results identical
     # to serial execution (deterministic policies, no shared state).
     for kind in ('ref', 'fla'):
         t0 = time.perf_counter()
-        with Pool(6, initializer=_init, initargs=(kind,)) as pool:
+        with Pool(WORKERS, initializer=_init, initargs=(kind,)) as pool:
             tasks = [(cap, i) for cap in CAPS
                      for i in range(len(policies(cap)))]
             for row in pool.imap_unordered(_task, tasks):

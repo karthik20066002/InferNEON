@@ -1,0 +1,22 @@
+worker loaded ref: 149640 positions
+worker loaded ref: 149640 positions
+worker loaded ref: 149640 positions
+worker loaded ref: 149640 positions
+worker loaded ref: 149640 positions
+worker loaded ref: 149640 positions
+ref cap=320 LRU                      hit=0.0027 B/tok=300485976
+ref cap=320 LeastStale               hit=0.0003 B/tok=370513110
+ref cap=320 LFU                      hit=0.0002 B/tok=363439217
+ref cap=320 LFU-halving-40           hit=0.0006 B/tok=346697738
+ref cap=320 HybridStaleHeat-t0.5-halved hit=0.0004 B/tok=353398702
+ref cap=640 LRU                      hit=0.0254 B/tok=242691528
+ref cap=320 HybridStaleHeat-t0.625-halved hit=0.0004 B/tok=353398702
+ref cap=320 Belady                   hit=0.0000 B/tok=466969910
+ref cap=320 HybridStaleHeat-t0.75-halved hit=0.0004 B/tok=353398702
+ref cap=320 HelenDual-t0.75-lifetime hit=0.0006 B/tok=339812621
+ref cap=640 LeastStale               hit=0.0228 B/tok=246456563
+ref cap=320 HelenDual-t0.75-halved   hit=0.0004 B/tok=352916458
+ref cap=640 LFU                      hit=0.0056 B/tok=296519971
+ref cap=640 LFU-halving-40           hit=0.0264 B/tok=236364755
+Terminated                 .venv/bin/python scripts/e1_lite.py
+35 prompts x 128 tokens
