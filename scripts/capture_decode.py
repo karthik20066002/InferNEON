@@ -106,14 +106,17 @@ def main():
           f'({len(ids)} prompt + {args.decode_tokens} decode)', flush=True)
 
     sc = StreamCapture(str(model))
-    sc.weight_cache = WeightCache(0)  # uncached: routes bit-proven identical
+    # 1 GiB GPU expert cache (routes bit-proven identical to uncached) plus
+    # the RAM dequant memo: prefill pays each dequant once, decode reuses.
+    # Peak VRAM stays under ~6 GiB on the 8 GiB card.
+    sc.weight_cache = WeightCache(1024 * 1024**2)
     mode = 'a' if have else 'w'
     with torch.inference_mode(), open(path, mode) as f:
         if head is None:
             head = {'type': 'header', 'prompt_id': args.prompt_id, 'domain': domain,
                     'text': text, 'prompt_tokens': len(ids),
                     'decode_target': args.decode_tokens,
-                    'greedy': True, 'seed': 0, 'uncached': True,
+                    'greedy': True, 'seed': 0, 'weight_cache_mib': 1024,
                     'deterministic_algorithms': True,
                     'delta_kernels': delta_kernel_path(),
                     'versions': package_versions(),

@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import json
 import os
+from collections import OrderedDict
 
 import torch
 from safetensors import safe_open
@@ -38,6 +39,12 @@ from capture.weight_cache import WeightCache
 
 PREFIX = "model.language_model."
 
+# RAM memo cap for dequantized tensors (mixers + experts). Pure-function
+# cache: same checkpoint bytes always yield identical fp16, so hits cannot
+# change numerics; eviction only costs recompute. Callers MUST NOT mutate
+# returned tensors (all current uses copy onward: .to(dev), .T, copy_).
+MEMO_MAX_BYTES = 1536 * 1024**2
+
 
 class StreamCapture:
     def __init__(self, model_dir: str, device: str = "cuda", dtype=torch.float16,
@@ -46,6 +53,8 @@ class StreamCapture:
         self.device = torch.device(device)
         self.dtype = dtype
         self.weight_cache = WeightCache(weight_cache_bytes)
+        self._memo: OrderedDict = OrderedDict()
+        self._memo_bytes = 0
         full = AutoConfig.from_pretrained(model_dir, local_files_only=True)
         self.cfg = full.text_config if hasattr(full, "text_config") else full
         self.nlayers = self.cfg.num_hidden_layers
@@ -71,15 +80,32 @@ class StreamCapture:
         return self.handles[fn].get_slice(ckpt_name)[:]
 
     def _dequant_or_dense(self, base: str) -> torch.Tensor:
-        """Dequantized fp16 [in, out] for a linear, dense passthrough if stored BF16."""
+        """Dequantized fp16 [in, out] for a linear, dense passthrough if stored BF16.
+
+        Results are memoized in RAM (FIFO, MEMO_MAX_BYTES): the same base key
+        always maps to identical bytes, so a hit is bit-identical to a fresh
+        dequant. This removes ~960 float64 CPU dequants per decode token
+        after warmup. Returned tensors are read-only to callers.
+        """
+        hit = self._memo.get(base)
+        if hit is not None:
+            self._memo.move_to_end(base)
+            return hit
         try:
             qw = self._get(base + ".qweight")
         except Exception:
-            return self._get(base + ".weight").to(self.dtype)
-        qz = self._get(base + ".qzeros")
-        sc = self._get(base + ".scales")
-        gi = self._get(base + ".g_idx")
-        return dequant_linear(qw, qz, sc, gi, self.dtype)
+            w = self._get(base + ".weight").to(self.dtype)
+        else:
+            qz = self._get(base + ".qzeros")
+            sc = self._get(base + ".scales")
+            gi = self._get(base + ".g_idx")
+            w = dequant_linear(qw, qz, sc, gi, self.dtype)
+        self._memo[base] = w
+        self._memo_bytes += w.numel() * w.element_size()
+        while self._memo_bytes > MEMO_MAX_BYTES and len(self._memo) > 1:
+            _, old = self._memo.popitem(last=False)
+            self._memo_bytes -= old.numel() * old.element_size()
+        return w
 
     def _materialize_resident(self):
         """embed, final norm, lm_head, rotary, all routers/gates/norms. Small."""
