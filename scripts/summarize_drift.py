@@ -29,6 +29,7 @@ def main():
     if not pairs:
         raise SystemExit(f'no complete ref/fla pairs in {DIR}')
     pos = setd = slots = tslots = 0
+    set_replaced = 0.0  # sum of |A\B|/8: per-expert replacement rate (set-based)
     per_domain = defaultdict(lambda: [0, 0])  # domain -> [positions, set_drift]
     per_prompt = {}
     gaps = defaultdict(list)  # domain -> list of (p8-p9) full-softmax gaps
@@ -50,6 +51,7 @@ def main():
                     tslots += 1
                     if x != y:
                         slots += 1
+                set_replaced += len(set(ta) - set(tb)) / 8
             if 'top16_probs' in ra:
                 dom = a.get('domain') or 'unknown'
                 for probs in ra['top16_probs']:
@@ -69,7 +71,13 @@ def main():
         'positions': pos,
         'set_drift_positions': setd,
         'F_set_drift': setd / pos,
-        'slot_drift': slots / tslots,
+        # Rank-slot drift: fraction of rank positions holding a different
+        # expert. RANK-BASED (rerankings count); diagnostic only, never a
+        # bar, never cited without the rank-based qualifier.
+        'rank_slot_drift': slots / tslots,
+        # Set-expert drift: mean |A\B|/8 over positions, i.e. the fraction
+        # of routed experts replaced. SET-BASED, per-expert units.
+        'set_expert_drift': set_replaced / pos,
         'per_domain_set_drift': {d: v[1] / v[0] for d, v in sorted(per_domain.items())},
         'p8_p9_gap': gap_stats,
         'per_prompt': per_prompt,
@@ -78,7 +86,8 @@ def main():
         json.dump(summary, f, indent=2)
     print(f'pairs: {len(pairs)}, positions: {pos}')
     print(f'F (set-drift, THE floor): {setd}/{pos} = {100 * setd / pos:.2f}%')
-    print(f'slot-drift (diagnostic): {100 * slots / tslots:.2f}%')
+    print(f'rank-slot drift (rank-based, diagnostic): {100 * slots / tslots:.2f}%')
+    print(f'set-expert drift (set-based, per-expert): {100 * set_replaced / pos:.2f}%')
     for d, v in sorted(per_domain.items()):
         print(f'  {d}: {100 * v[1] / v[0]:.2f}%')
     for d, g in sorted(gap_stats.items()):

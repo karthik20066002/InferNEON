@@ -4,7 +4,8 @@
   "positions": 149640,
   "set_drift_positions": 19221,
   "F_set_drift": 0.12844827586206897,
-  "slot_drift": 0.11002906976744187,
+  "rank_slot_drift": 0.11002906976744187,
+  "set_expert_drift": 0.017126937984496125,
   "per_domain_set_drift": {
     "chat": 0.1065424610051993,
     "code": 0.0999219968798752,
@@ -12,6 +13,7 @@
     "summarization": 0.10868617683686177,
     "tamil_hindi": 0.18527728873239438
   },
+  "p8_p9_gap": {},
   "per_prompt": {
     "chat_calib_01": {
       "positions": 3680,

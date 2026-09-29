@@ -121,3 +121,30 @@ the winner. Deliberate, locked.
   later.
 - FREEZE: after this amendment, any rule change needs a written reason AND
   must precede the affected policy runs. The preregistration is finished.
+
+## Amendment 2026-09-29 — fused-event replay, slot-metric correction
+## (the "Amendment 3" item from review; filed as 4 since 3 exists)
+
+No policy runs exist. Written reason: review-identified gaps, pre-policy.
+
+- Fused-event replay (matters most): each (prompt, token, layer) position
+  replays as ONE event demanding all 8 routed experts simultaneously
+  (atomic set demand against the resident set: hit iff routed ⊆ resident).
+  NEVER as 8 sequential per-expert accesses — sequential replay lets
+  recency policies score phantom hits across sub-accesses and flips
+  LRU-vs-LFU rankings (August 2026 trace-evaluation paper). Enforced by
+  `sim/engine.py::ReplayEvent` (frozen, exactly-8) and
+  `events_from_routed` (one event per position; fragments rejected, never
+  split or padded), unit-tested.
+- Slot-metric correction: the old `slot_drift` compared RANKED lists, so it
+  was rank-based despite the sets-not-ranks lock. Renamed
+  `rank_slot_drift` (diagnostic only, never cited unqualified). New
+  `set_expert_drift` = mean |A∖B|/8 over positions (set-based, per-expert
+  units). Pilot parenthetical corrected: pilot set-expert drift is 1.14%
+  (not the retired 7.01% rank figure); 35-prompt value is 1.71%.
+- Tamil noise verdict (measurement, not a rule): perturbation magnitude on
+  Tamil tokens is ~2x (mean|centered Δlogp| 1.75e-2 vs ~9e-3; median
+  1.18e-2 vs ~5e-3), and logit-unit rebinning preserves Tamil's excess
+  flips at fixed gap. B (bigger noise) is confirmed as at least part of
+  the mechanism; tail-packing stays a possible secondary. The paragraph
+  must say fixed-magnitude is NOT established.
