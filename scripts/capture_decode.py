@@ -18,6 +18,7 @@ import argparse
 import json
 import os
 import sys
+import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -106,17 +107,17 @@ def main():
           f'({len(ids)} prompt + {args.decode_tokens} decode)', flush=True)
 
     sc = StreamCapture(str(model))
-    # 1 GiB GPU expert cache (routes bit-proven identical to uncached) plus
+    # 2 GiB GPU expert cache (routes bit-proven identical to uncached) plus
     # the RAM dequant memo: prefill pays each dequant once, decode reuses.
-    # Peak VRAM stays under ~6 GiB on the 8 GiB card.
-    sc.weight_cache = WeightCache(1024 * 1024**2)
+    # Peak VRAM stays under ~6.5 GiB on the 8 GiB card (measured 4.9 used).
+    sc.weight_cache = WeightCache(2048 * 1024**2)
     mode = 'a' if have else 'w'
     with torch.inference_mode(), open(path, mode) as f:
         if head is None:
             head = {'type': 'header', 'prompt_id': args.prompt_id, 'domain': domain,
                     'text': text, 'prompt_tokens': len(ids),
                     'decode_target': args.decode_tokens,
-                    'greedy': True, 'seed': 0, 'weight_cache_mib': 1024,
+                    'greedy': True, 'seed': 0, 'weight_cache_mib': 2048,
                     'deterministic_algorithms': True,
                     'delta_kernels': delta_kernel_path(),
                     'versions': package_versions(),
@@ -127,6 +128,8 @@ def main():
             write_line(f, head)
         recs = [record() for _ in ids]
         _, logits = sc.prefill(ids, recs)
+        print(f'{args.prompt_id}: prefill {sc.phase_times["load"]:.1f}s load / '
+              f'{sc.phase_times["drop"]:.1f}s drop', flush=True)
         for ti, rec in enumerate(recs):
             if ti < n_done:
                 continue  # prefill recompute; record already on disk
@@ -145,10 +148,18 @@ def main():
                 _, logits = sc.step(token, None, pos=len(ids) + i)
             else:
                 rec = record()
+                t_tok = time.perf_counter()
                 _, logits = sc.step(token, rec, pos=len(ids) + i)
+                dt_tok = time.perf_counter() - t_tok
                 write_line(f, pack(rec, 'decode', len(ids) + i, token))
                 print(f'  {args.prompt_id} decode {i + 1}/{args.decode_tokens} '
                       f'token={token}', flush=True)
+                if (i + 1) % 16 == 0:
+                    pt = sc.phase_times
+                    print(f'  phases last-token: {dt_tok:.2f}s wall = '
+                          f'{pt["load"]:.2f}s load + {pt["drop"]:.2f}s drop + '
+                          f'{dt_tok - pt["load"] - pt["drop"]:.2f}s fwd/other',
+                          flush=True)
             token = int(logits.argmax())
         print(f'{args.prompt_id}: COMPLETE '
               f'({len(ids) + args.decode_tokens} tokens)', flush=True)

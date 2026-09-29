@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import json
 import os
+import time
 from collections import OrderedDict
 
 import torch
@@ -58,6 +59,11 @@ class StreamCapture:
         self.weight_cache = WeightCache(weight_cache_bytes)
         self._memo: OrderedDict = OrderedDict()
         self._memo_bytes = 0
+        # Permanent phase telemetry (Helen's "why did this token take X"
+        # box): seconds accumulated per call in load (materialize + H2D),
+        # drop (layer teardown); forward derived as wall - load - drop.
+        # Timer-only; no math impact. Reset at each prefill()/step().
+        self.phase_times = {'load': 0.0, 'drop': 0.0}
         full = AutoConfig.from_pretrained(model_dir, local_files_only=True)
         self.cfg = full.text_config if hasattr(full, "text_config") else full
         self.nlayers = self.cfg.num_hidden_layers
@@ -173,6 +179,7 @@ class StreamCapture:
     # -- per-layer transient weights --------------------------------------
     def _load_mixer_and_shared(self, li: int):
         """Materialize layer li's mixer linears + shared-expert MLP."""
+        t0 = time.perf_counter()
         m = self.model.model
         lay = m.layers[li]
         mix = lay.linear_attn if self.layer_types[li] == "linear_attention" else lay.self_attn
@@ -192,9 +199,11 @@ class StreamCapture:
                         f"(in,out)={(mod.in_features, mod.out_features)} nor "
                         f"(out,in)={(mod.out_features, mod.in_features)}")
                 mod.weight = torch.nn.Parameter(w.to(dev).to(dt))
+        self.phase_times['load'] += time.perf_counter() - t0
 
     def _fill_experts(self, li: int, need_experts, *, use_cache=True):
         """Fill fused gate_up/down slices for the routed hit set only (peak = 1 layer)."""
+        t0 = time.perf_counter()
         m = self.model.model
         dev, dt = self.device, self.dtype
         p = f"{PREFIX}layers.{li}."
@@ -216,6 +225,7 @@ class StreamCapture:
                 m._fused_gate_up[int(ei), :ni].copy_(g.T.to(dev).to(dt))
                 m._fused_gate_up[int(ei), ni:].copy_(u.T.to(dev).to(dt))
                 m._fused_down[int(ei)].copy_(d.T.to(dev).to(dt))
+        self.phase_times['load'] += time.perf_counter() - t0
 
     QUANT_LINEARS = ("q_proj", "k_proj", "v_proj", "o_proj", "in_proj_qkv",
                      "in_proj_z", "in_proj_a", "in_proj_b", "out_proj")
@@ -266,7 +276,13 @@ class StreamCapture:
         return f"{PREFIX}layers.{li}.{kind}.{relname}"  # base; caller appends .weight
 
     def _drop_layer(self, li: int):
-        """Return layer li to meta (free the transient). Resident parts untouched."""
+        """Return layer li to meta (free the transient). Resident parts untouched.
+
+        No torch.cuda.empty_cache(): 40 syncing allocator flushes per token
+        cost ~0.1-0.5s with zero math impact. The allocator reuses the
+        same-shape freed blocks without a global flush; reserved stays flat.
+        """
+        t0 = time.perf_counter()
         m = self.model.model
         lay = m.layers[li]
         mix = lay.linear_attn if self.layer_types[li] == "linear_attention" else lay.self_attn
@@ -283,8 +299,7 @@ class StreamCapture:
                 mod = getattr(se, proj)
                 mod.weight = torch.nn.Parameter(
                     torch.empty(mod.weight.shape, device="meta", dtype=self.dtype))
-        if self.device.type == "cuda":
-            torch.cuda.empty_cache()
+        self.phase_times['drop'] += time.perf_counter() - t0
 
     # -- batched prompt prefill ---------------------------------------------
     def prefill(self, token_ids, recs):
@@ -303,6 +318,7 @@ class StreamCapture:
         # Each prompt owns fresh attention/DeltaNet state. Weight tensors alone
         # may persist between prompts; never reuse KV/recurrent state here.
         self.cache = DynamicCache(config=self.cfg)
+        self.phase_times = {'load': 0.0, 'drop': 0.0}
         ids = torch.tensor([list(token_ids)], device=dev)
         h = m.embed_tokens(ids)
         seq_len = h.shape[1]
@@ -387,6 +403,7 @@ class StreamCapture:
         dev, dt = self.device, self.dtype
         if not hasattr(self, "cache"):
             self.cache = DynamicCache(config=self.cfg)
+        self.phase_times = {'load': 0.0, 'drop': 0.0}
         with torch.no_grad():
             ids = torch.tensor([[token_id]], device=dev)
             h = m.embed_tokens(ids)
