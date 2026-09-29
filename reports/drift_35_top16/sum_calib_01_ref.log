@@ -1,3 +1,38 @@
-W0929 05:05:39.822000 104815 .venv/lib/python3.12/site-packages/torch/utils/_pytree.py:630] <enum 'KernelPreference'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
-W0929 05:05:39.844000 104815 .venv/lib/python3.12/site-packages/torch/utils/_pytree.py:630] <enum 'ScaleCalculationMode'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
-dump_routes: refusing to run: tracked files are modified (commit f3b1de597d6ee565f1c1747bb3e9a5a8a9cb51a6 does not describe this tree). Commit first, or pass --allow-dirty (recorded in the output).
+W0929 06:15:49.604000 122713 .venv/lib/python3.12/site-packages/torch/utils/_pytree.py:630] <enum 'KernelPreference'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+W0929 06:15:49.629000 122716 .venv/lib/python3.12/site-packages/torch/utils/_pytree.py:630] <enum 'ScaleCalculationMode'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `chunk_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+[transformers] `causal_conv1d_update` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `fused_recurrent_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+  decode 1/1: 18.874s token=8160
+wrote reports/drift_35_top16/sum_calib_01_ref.json: 150 records x 40 layers, logits 05b4d943e254, kernels=reference (forced)
+ult = run(sc, ids, args.tokens)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/axiss/Documents/projects/InferNEON/inferneon-eval/scripts/benchmark_weight_cache.py", line 68, in run
+    _, logits = sc.prefill(ids, prompt)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/axiss/Documents/projects/InferNEON/inferneon-eval/capture/stream_capture.py", line 293, in prefill
+    x = lay.linear_attn(
+        ^^^^^^^^^^^^^^^^
+  File "/home/axiss/Documents/projects/InferNEON/inferneon-eval/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1783, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/axiss/Documents/projects/InferNEON/inferneon-eval/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1794, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/axiss/Documents/projects/InferNEON/inferneon-eval/.venv/lib/python3.12/site-packages/transformers/integrations/accelerate.py", line 1010, in wrapped
+    output = forward_func(self, *args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/axiss/Documents/projects/InferNEON/inferneon-eval/.venv/lib/python3.12/site-packages/transformers/models/qwen3_5_moe/modeling_qwen3_5_moe.py", line 641, in forward
+    core_attn_out, last_recurrent_state = torch_chunk_gated_delta_rule(
+                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/axiss/Documents/projects/InferNEON/inferneon-eval/.venv/lib/python3.12/site-packages/transformers/integrations/hub_kernels.py", line 885, in wrapped
+    return implementation(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/axiss/Documents/projects/InferNEON/inferneon-eval/.venv/lib/python3.12/site-packages/transformers/models/qwen3_5_moe/modeling_qwen3_5_moe.py", line 427, in torch_chunk_gated_delta_rule
+    last_recurrent_state = last_recurrent_state * chunk_decay[:, :, i] + key[:, :, i].transpose(-1, -2) @ v_new
+                                                                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~
+  File "/home/axiss/Documents/projects/InferNEON/inferneon-eval/.venv/lib/python3.12/site-packages/torch/_native/registry.py", line 958, in eager_router
+    return _fallback.call_boxed(keyset, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 20.00 MiB. GPU 0 has a total capacity of 7.70 GiB of which 4.56 MiB is free. Including non-PyTorch memory, this process has 3.83 GiB memory in use. Process 122716 has 3.85 GiB memory in use. Of the allocated memory 3.64 GiB is allocated by PyTorch, and 5.01 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://docs.pytorch.org/docs/stable/notes/cuda.html#optimizing-memory-usage-with-pytorch-cuda-alloc-conf)

@@ -1,1 +1,15 @@
 35 prompts
+pairs: 35, positions: 149640
+F (set-drift, THE floor): 19221/149640 = 12.84%
+slot-drift (diagnostic): 11.00%
+  chat: 10.65%
+  code: 9.99%
+  math: 9.80%
+  summarization: 10.87%
+  tamil_hindi: 18.53%
+  gap p8-p9 chat: n=23080 median=6.09e-04 mean=1.13e-03 frac<1e-3=0.653
+  gap p8-p9 code: n=25640 median=6.46e-04 mean=1.14e-03 frac<1e-3=0.638
+  gap p8-p9 math: n=23360 median=6.47e-04 mean=1.17e-03 frac<1e-3=0.633
+  gap p8-p9 summarization: n=32120 median=5.94e-04 mean=1.07e-03 frac<1e-3=0.662
+  gap p8-p9 tamil_hindi: n=45440 median=5.54e-04 mean=9.23e-04 frac<1e-3=0.697
+wrote reports/drift_35_top16/summary.json

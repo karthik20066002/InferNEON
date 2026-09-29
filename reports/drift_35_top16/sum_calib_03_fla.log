@@ -1,3 +1,40 @@
-W0929 05:05:50.871000 104952 .venv/lib/python3.12/site-packages/torch/utils/_pytree.py:630] <enum 'KernelPreference'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
-W0929 05:05:50.894000 104952 .venv/lib/python3.12/site-packages/torch/utils/_pytree.py:630] <enum 'ScaleCalculationMode'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
-dump_routes: refusing to run: tracked files are modified (commit f3b1de597d6ee565f1c1747bb3e9a5a8a9cb51a6 does not describe this tree). Commit first, or pass --allow-dirty (recorded in the output).
+W0929 06:25:06.589000 124852 .venv/lib/python3.12/site-packages/torch/utils/_pytree.py:630] <enum 'KernelPreference'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+W0929 06:25:06.616000 124852 .venv/lib/python3.12/site-packages/torch/utils/_pytree.py:630] <enum 'ScaleCalculationMode'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+  decode 1/1: 5.325s token=8160
+wrote reports/drift_35_top16/sum_calib_03_fla.json: 137 records x 40 layers, logits d731bb965ae4, kernels=fast
+free: 19464192, total: 8272019456).
+[W929 06:28:24.264733869 CUDACachingAllocator.cpp:3934] memory allocation failed with OOM on device 0 while trying to allocate 20971520 bytes (free: 19464192, total: 8272019456).
+Traceback (most recent call last):
+  File "/home/axiss/Documents/projects/InferNEON/inferneon-eval/scripts/dump_routes.py", line 112, in <module>
+    main()
+  File "/home/axiss/Documents/projects/InferNEON/inferneon-eval/scripts/dump_routes.py", line 76, in main
+    result = run(sc, ids, args.tokens)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/axiss/Documents/projects/InferNEON/inferneon-eval/scripts/benchmark_weight_cache.py", line 68, in run
+    _, logits = sc.prefill(ids, prompt)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/axiss/Documents/projects/InferNEON/inferneon-eval/capture/stream_capture.py", line 339, in prefill
+    out = lay.mlp(router_input)
+          ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/axiss/Documents/projects/InferNEON/inferneon-eval/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1783, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/axiss/Documents/projects/InferNEON/inferneon-eval/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1794, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/axiss/Documents/projects/InferNEON/inferneon-eval/.venv/lib/python3.12/site-packages/transformers/models/qwen3_5_moe/modeling_qwen3_5_moe.py", line 916, in forward
+    expert_output = self.experts(hidden_states_reshaped, selected_experts, routing_weights)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/axiss/Documents/projects/InferNEON/inferneon-eval/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1783, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/axiss/Documents/projects/InferNEON/inferneon-eval/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1794, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/axiss/Documents/projects/InferNEON/inferneon-eval/.venv/lib/python3.12/site-packages/transformers/integrations/moe.py", line 573, in forward
+    return experts_forward(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/axiss/Documents/projects/InferNEON/inferneon-eval/.venv/lib/python3.12/site-packages/transformers/integrations/moe.py", line 473, in grouped_mm_experts_forward
+    weighted_out = weighted_out[inv_perm]  # (S, hidden_dim)
+                   ~~~~~~~~~~~~^^^^^^^^^^
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 20.00 MiB. GPU 0 has a total capacity of 7.70 GiB of which 18.56 MiB is free. Process 124849 has 3.83 GiB memory in use. Including non-PyTorch memory, this process has 3.83 GiB memory in use. Of the allocated memory 3.63 GiB is allocated by PyTorch, and 9.02 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://docs.pytorch.org/docs/stable/notes/cuda.html#optimizing-memory-usage-with-pytorch-cuda-alloc-conf)
