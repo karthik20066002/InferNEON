@@ -148,3 +148,20 @@ No policy runs exist. Written reason: review-identified gaps, pre-policy.
   flips at fixed gap. B (bigger noise) is confirmed as at least part of
   the mechanism; tail-packing stays a possible secondary. The paragraph
   must say fixed-magnitude is NOT established.
+
+## Amendment 2026-09-29 — D2 resolved: headline E4 bound (replaces Amendment 3 headline)
+
+Written reason (freeze clause; no policy has run): (1) SpecMD §5.3, read
+in full after Amendment 3, shows recall superiority does not transfer to
+cache superiority — a recall headline cannot carry the paper's OS+bound
+claim (D1-A). (2) The contribution is the bound; the headline must be the
+bound. Supersedes the Amendment-3 headline only; everything else stands.
+- Headline: E4. The queue's worst-case bound holds under an always-wrong
+  predictor. Win criterion (deterministic, no multiplicity adjustment):
+  max added delay to any real fetch ≤ the cap, on BOTH traces, all 20
+  eval prompts. A bound holds or it doesn't.
+- Recall comparisons demoted intact: early-router vs B2 @8 becomes first
+  secondary; the other four keep Holm at family α=0.05. Rules (1)(2)
+  unchanged everywhere.
+- B0 = most-popular-8, B1 = previous-token's-8, B2 = co-occurrence
+  tables (EdgeMoE method).
