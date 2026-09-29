@@ -10,8 +10,15 @@ set -u
 cd "$(dirname "$0")/.."
 TOKENS="${TOKENS:-128}"
 export TOKENS
-MASTER="reports/capture_master.log"
-mkdir -p data/traces reports
+# OUTDIR override keeps trace families separate (default: data/traces).
+# MASTER follows a non-default OUTDIR so families never share logs.
+OUTDIR="${OUTDIR:-data/traces}"
+if [ "$OUTDIR" = "data/traces" ]; then
+  MASTER="reports/capture_master.log"
+else
+  MASTER="reports/capture_$(basename "$OUTDIR")_master.log"
+fi
+mkdir -p "$OUTDIR" reports
 export PROMPTS_LIST
 PROMPTS_LIST="$(mktemp)"
 .venv/bin/python -c "
@@ -34,11 +41,16 @@ print(str(len(rows)) + ' prompts x ' + os.environ['TOKENS'] + ' tokens', flush=T
 "
 echo "CAPTURE START $(date -Iseconds) tokens=$TOKENS" >> "$MASTER"
 while read -r file pid; do
-  log="reports/capture_${pid}.log"
+  if [ "$OUTDIR" = "data/traces" ]; then
+    log="reports/capture_${pid}.log"
+  else
+    log="reports/capture_$(basename "$OUTDIR")_${pid}.log"
+  fi
   echo "START $pid $(date -Iseconds)" >> "$MASTER"
   CUBLAS_WORKSPACE_CONFIG=:4096:8 .venv/bin/python scripts/capture_decode.py \
     --prompts-file "$file" --prompt-id "$pid" \
-    --decode-tokens "$TOKENS" > "$log" 2>&1
+    --decode-tokens "$TOKENS" --outdir "$OUTDIR" ${FORCE_REF:+--force-reference-kernels} \
+    > "$log" 2>&1
   echo "DONE $pid rc=$? $(date -Iseconds)" >> "$MASTER"
 done < "$PROMPTS_LIST"
 rm -f "$PROMPTS_LIST"

@@ -24,6 +24,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / 'scripts'))
+if '--force-reference-kernels' in sys.argv:
+    # Before capture.stream_capture pulls in the HF modeling module, whose
+    # fallback decorators bind fast vs reference kernels at import time.
+    from capture.provenance import block_fast_kernels
+    block_fast_kernels()
 import torch
 from transformers import AutoTokenizer
 from capture.stream_capture import StreamCapture
@@ -58,6 +63,10 @@ def main():
     ap.add_argument('--decode-tokens', type=int, default=128)
     ap.add_argument('--outdir', default='data/traces')
     ap.add_argument('--allow-dirty', action='store_true')
+    ap.add_argument('--force-reference-kernels', action='store_true',
+                    help='Block fla/causal_conv1d imports so transformers binds the '
+                         'reference DeltaNet path. For the second (reference) trace '
+                         'family only; never mix with fast-kernel traces.')
     args = ap.parse_args()
     gitstate = require_clean_tree(ROOT, args.allow_dirty, 'capture_decode')
     if os.environ.get('CUBLAS_WORKSPACE_CONFIG', '') not in (':4096:8', ':16:8'):
@@ -119,7 +128,9 @@ def main():
                     'decode_target': args.decode_tokens,
                     'greedy': True, 'seed': 0, 'weight_cache_mib': 2048,
                     'deterministic_algorithms': True,
-                    'delta_kernels': delta_kernel_path(),
+                    'delta_kernels': ('reference (forced)'
+                                      if args.force_reference_kernels
+                                      else delta_kernel_path()),
                     'versions': package_versions(),
                     'git_commit': gitstate['git_commit'],
                     'git_tracked_dirty': gitstate['git_tracked_dirty'],
