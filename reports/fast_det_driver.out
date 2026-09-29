@@ -1,0 +1,18 @@
+W0929 14:31:51.144000 12485 .venv/lib/python3.12/site-packages/torch/utils/_pytree.py:630] <enum 'KernelPreference'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+W0929 14:31:51.174000 12485 .venv/lib/python3.12/site-packages/torch/utils/_pytree.py:630] <enum 'ScaleCalculationMode'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+RUN off1
+  decode 1/1: 5.102s token=90700
+off1: prefill=33.608s cache={'max_bytes': 0, 'bytes': 0, 'entries': 0, 'hits': 0, 'misses': 320, 'bypasses': 320} routes_exact=True logits_equal=True (timing is noise, not a speedup claim)
+RUN off2
+  decode 1/1: 5.675s token=90700
+off2: route_mismatches=0 argmax=2/2 max_logit_delta=0.0000 eighth_only=0 expert_hist={}
+off2: prefill=28.614s cache={'max_bytes': 0, 'bytes': 0, 'entries': 0, 'hits': 0, 'misses': 320, 'bypasses': 320} routes_exact=True logits_equal=True (timing is noise, not a speedup claim)
+RUN cold
+  decode 1/1: 6.029s token=90700
+cold: route_mismatches=0 argmax=2/2 max_logit_delta=0.0000 eighth_only=0 expert_hist={}
+cold: prefill=27.015s cache={'max_bytes': 536870912, 'bytes': 534773760, 'entries': 85, 'hits': 0, 'misses': 320, 'bypasses': 235} routes_exact=True logits_equal=True (timing is noise, not a speedup claim)
+RUN warm
+  decode 1/1: 5.111s token=90700
+warm: route_mismatches=0 argmax=2/2 max_logit_delta=0.0000 eighth_only=0 expert_hist={}
+warm: prefill=36.032s cache={'max_bytes': 536870912, 'bytes': 534773760, 'entries': 85, 'hits': 85, 'misses': 555, 'bypasses': 470} routes_exact=True logits_equal=True (timing is noise, not a speedup claim)
+CORRUPTION CHECK: PASS; output: 'Thinking'
