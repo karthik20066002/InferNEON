@@ -1,0 +1,20 @@
+8186 positions, 205 tokens
+cap=  320 LRU                      hit=0.0000 B/tok=12816193901
+cap=  320 LFU                      hit=0.0000 B/tok=12816193901
+cap=  320 LFU-halving-40           hit=0.0000 B/tok=12816193901
+cap=  320 LeastStale               hit=0.0000 B/tok=12816193901
+Traceback (most recent call last):
+  File "/home/axiss/Documents/projects/InferNEON/inferneon-eval/scripts/e1_traces.py", line 86, in <module>
+    main()
+  File "/home/axiss/Documents/projects/InferNEON/inferneon-eval/scripts/e1_traces.py", line 72, in main
+    st = pol.run(events)
+         ^^^^^^^^^^^^^^^
+  File "/home/axiss/Documents/projects/InferNEON/inferneon-eval/sim/eviction.py", line 98, in run
+    hit = self.demand(keys, pass_id)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/axiss/Documents/projects/InferNEON/inferneon-eval/sim/eviction.py", line 282, in demand
+    self._evict_bottom(1, pass_id, need)
+  File "/home/axiss/Documents/projects/InferNEON/inferneon-eval/sim/eviction.py", line 306, in _evict_bottom
+    victim = min(pool,
+             ^^^^^^^^^
+ValueError: min() iterable argument is empty

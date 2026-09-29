@@ -28,6 +28,24 @@ class ReplayEventTests(unittest.TestCase):
         with self.assertRaises(AttributeError):
             ev.layer = 3  # type: ignore
 
+    def test_demote_then_evict_when_bottom_dry(self):
+        # Bottom holds only demanded members (or nothing) while top is full
+        # and a miss needs room: demote coldest-top first (was empty-pool
+        # crash). Constructed directly.
+        from sim.eviction import HelenDual, HybridStaleHeat
+        for cls in (lambda c: HelenDual(c, theta=1.0),
+                    lambda c: HybridStaleHeat(c, theta=1.0)):
+            p = cls(16)  # top 8, bottom 8
+            p.top = set(range(8))
+            p.bottom = set()
+            for _ in range(3):
+                p.store.tick()
+                for k in range(8):
+                    p.store.touch(k)
+            p.demand(frozenset(range(100, 108)), 5)
+            self.assertLessEqual(len(p.top) + len(p.bottom), 16)
+            self.assertTrue(set(range(100, 108)) <= p.top | p.bottom)
+
 
 if __name__ == '__main__':
     unittest.main()

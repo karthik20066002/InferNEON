@@ -266,6 +266,16 @@ class _TieredBase(Policy):
     def _evict_bottom(self, n, pass_id, need):
         raise NotImplementedError
 
+    def _ensure_evictable(self, need):
+        # Bottom may hold only demanded members (or be empty) while top is
+        # full: demote the coldest top member so a victim exists. Provably
+        # safe: eviction needed with an empty bottom pool implies top is
+        # nonempty (else total + missing <= cap by the capacity floor).
+        if not any(k not in need for k in self.bottom):
+            cold = min(self.top, key=self._heat)
+            self.top.discard(cold)
+            self.bottom.add(cold)
+
     def demand(self, keys, pass_id):
         need = set(keys)
         resident = self.top | self.bottom
@@ -279,6 +289,7 @@ class _TieredBase(Policy):
             missing = sorted(need - resident)
             self.stats.missed_experts += len(missing)
             while len(self.top) + len(self.bottom) + len(missing) > self.cap:
+                self._ensure_evictable(need)
                 self._evict_bottom(1, pass_id, need)
             for k in missing:
                 self.bottom.add(k)
