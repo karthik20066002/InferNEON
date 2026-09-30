@@ -31,6 +31,10 @@ implemented. The current task is measurement, not more mechanism.
 - [Committed measurements](inferneon-eval/reports/exposed_wait_matched_L.json)
 - [One exposed-wait plot](inferneon-eval/reports/exposed_wait_matched_L.svg)
 - [10-line note](inferneon-eval/reports/exposed_wait_matched_L.md)
+- [Prefill-warm robustness JSON](inferneon-eval/reports/exposed_wait_matched_L_warm.json)
+  and [two-line note](inferneon-eval/reports/exposed_wait_matched_L_warm.md):
+  B1 still ties no-hint at 320 warm; stop. Reproduce this check only with
+  `python3 scripts/exposed_wait_matched_L.py --warm-prefill` from `inferneon-eval/`.
 
 Under the labeled assumptions, B1 ties no-hint everywhere; capacity has a
 large effect, and perfect IDs help at positive lookahead. That is headroom,
