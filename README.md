@@ -26,6 +26,27 @@ implemented. The current task is measurement, not more mechanism.
   one primitive justified by it. Hardware waits for a laptop measurement;
   CM4 stays Debian-on-SD, with no SSD work.
 
+## Matched-L measurement
+
+- [Committed measurements](inferneon-eval/reports/exposed_wait_matched_L.json)
+- [One exposed-wait plot](inferneon-eval/reports/exposed_wait_matched_L.svg)
+- [10-line note](inferneon-eval/reports/exposed_wait_matched_L.md)
+
+Under the labeled assumptions, B1 ties no-hint everywhere; capacity has a
+large effect, and perfect IDs help at positive lookahead. That is headroom,
+not a measured predictor win or a reason to add a primitive now.
+
+Run measurement checks and reproduce sequentially (Python standard library only):
+
+```sh
+cd inferneon-eval
+python3 -m unittest tests.test_queue tests.test_prefetch_deadline tests.test_exposed_wait_matched
+python3 scripts/exposed_wait_matched_L.py
+```
+
+The full existing test suite also needs PyTorch; run it in the evaluation
+virtual environment with `.venv/bin/python -m unittest discover -s tests`.
+
 ## Forward-path proof
 
 Target (for now): QEMU `virt` machine, `-cpu cortex-a72`. No real hardware yet.
