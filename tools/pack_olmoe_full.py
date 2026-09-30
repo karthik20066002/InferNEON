@@ -26,8 +26,14 @@ import sys
 
 import torch
 
-DIR_LBA = 1
 DIR_MAGIC = 0x0000AE87
+# The directory is NOT at a fixed LBA: the v1 expert blob starts at byte 512
+# (base0 = round_up(16 + 16*8, 512)), so LBA 1 is expert (0,0)'s first 512
+# bytes. Writing there silently corrupts one expert (boot log showed
+# "expert00 head: 0x0000ae87"). The directory therefore lives immediately
+# after the expert region, whose end the kernel recomputes from the LBA-0
+# table: dir_lba = base0/512 + layers*experts*stride/512. See
+# config::DIR_LBA_AFTER_EXPERTS.
 MAXPOS = 16
 HEAD_DIM = 128
 ROPE_THETA = 10000.0
@@ -107,9 +113,30 @@ def main():
     print(f'embed {es} {ed}; norms {len(nshapes)} tensors; head {hs} {hd}',
           flush=True)
 
+    # v2 = verbatim copy of v1 (LBA-0 table + expert bytes bit-identical) plus
+    # appended tensors. Only the APPENDED part is new, so v1 images keep
+    # booting to the storage probe unchanged.
+    if os.path.exists(args.out_img) and os.path.getsize(args.out_img) > os.path.getsize(args.in_img):
+        os.remove(args.out_img)
     shutil.copyfile(args.in_img, args.out_img)
+    # NOTE: v2 layout keeps LBA0 + expert bytes IDENTICAL to the v1 image
+    # (only appends past the expert end), so this stays a plain copy.
+    # The directory lives AFTER the expert region at a table-computed
+    # offset (see below) -- never at LBA1, which is expert (0,0)'s head.
     off = os.path.getsize(args.out_img)
+    v1_size = off
     assert off % 512 == 0, off
+    # Reserve the directory's own 512-byte block FIRST, so no tensor can be
+    # emitted onto it (embed would otherwise start at exactly v1_size and the
+    # directory write would silently eat its first 512 bytes = 128 bf16 values).
+    dir_lba = v1_size // 512
+    with open(args.out_img, 'ab') as f:
+        f.write(b'\x00' * 512)
+    off += 512
+    print(f'directory reserved at LBA {dir_lba} (byte {v1_size}); tensors from {off}', flush=True)
+    # Sanity: file must currently end exactly at the expert region end.
+    index = json.load(open(os.path.join(args.model_dir, 'model.safetensors.index.json')))
+    print(f'v1 expert region ends at {off}; directory goes there', flush=True)
     entries = []
 
     def emit(tag, data: bytes, dtype_flag: int):
@@ -160,20 +187,30 @@ def main():
     # Norm dtypes actually stored (informational, kernel branches on flag).
     print('norm dtypes:', sorted(set(d for _, _, d in nshapes)), flush=True)
 
-    # Directory at fixed LBA 1.
-    # tag 8: q/k norms (appended after the counted seven)
+    # tag 8: q/k norms
     qkdata = b''.join(raw_bytes(n)[0] for n in qknames)
     assert len(qkdata) == 32 * 2048 * 2
     emit(8, qkdata, 0)
     assert len(entries) == 8
+    # Directory: the FIRST 512 bytes of the appended region, i.e. exactly at
+    # the end of the (unmodified, verbatim-copied) v1 expert region. The
+    # kernel finds it there by recomputing base0 + layers*experts*stride.
+    # Every entry must start strictly after the directory block, and after the
+    # expert region: a silent overlap here is the class of bug that made the
+    # first boot print the directory magic as "expert00 head".
+    for tag, o, ln, df in entries:
+        assert o >= v1_size + 512, (tag, o, v1_size)
+        assert (o - v1_size) % 512 == 0, (tag, o)
+    assert off == v1_size + 512 + sum((ln + (-ln) % 512) for _, _, ln, _ in entries), (off, v1_size)
     block = struct.pack('<II', DIR_MAGIC, len(entries))
     for tag, o, ln, df in entries:
         block += struct.pack('<IQQI4x', tag, o, ln, df)
     assert len(block) <= 512, len(block)
     block += b'\x00' * (512 - len(block))
     with open(args.out_img, 'r+b') as f:
-        f.seek(DIR_LBA * 512)
+        f.seek(dir_lba * 512)
         f.write(block)
+    print(f'directory at LBA {dir_lba} (byte {v1_size})', flush=True)
     print(f'wrote {args.out_img}: {os.path.getsize(args.out_img)} bytes, '
           f'{len(entries)} dir entries', flush=True)
     for tag, o, ln, df in entries:

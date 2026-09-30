@@ -89,17 +89,35 @@ TODO, not covered by this profile.
 
 ## 7. Non-expert region + directory (`tools/pack_olmoe_full.py`, disk-olmoe-full.img)
 
-- The expert blob is unchanged (§1–§3). Everything else the forward pass
-  needs lives AFTER the expert region, described by a directory at FIXED
-  LBA 1 (512 B): `magic2 u32 = 0x0000AE87`, `count u32`, then per entry
-  `tag u32, offset u64, len u64, dtype u32` (dtype 0 = bf16, 1 = fp32).
+- The expert blob is byte-for-byte the v1 image (plain copy, so old images
+  still boot to the storage probe). Everything else the forward pass needs
+  lives AFTER the expert region, described by a directory in the first 512 B
+  of that appended region.
+- **The directory is not at a fixed LBA.** The v1 packer put `base0` at
+  `round_up(16 + 16*8, 512)` = byte 512, so LBA 1 is expert (0,0)'s first
+  512 bytes. Writing the directory there looked fine and silently corrupted
+  one expert — the boot probe printed `expert00 head: 0x0000ae87`, i.e. the
+  directory magic, where bf16 weights should be. The kernel therefore
+  *derives* the directory address from the LBA-0 table it already trusts:
+  `dir_lba = base0/512 + layers*experts*stride/512`
+  (`config::dir_lba_after_experts`). Nothing about the appended region is
+  hardcoded anywhere.
+- The 512 B directory block is reserved before any tensor is emitted, and the
+  packer asserts every entry starts at or after `v1_size + 512` — otherwise
+  embed (the first tensor) would begin exactly where the directory goes.
+- Directory contents: `magic2 u32 = 0x0000AE87`, `count u32`, then per entry
+  `tag u32, offset u64, len u64, dtype u32, pad 4x` = **28 bytes** (the pad is
+  part of the stride; reading 24-byte entries desynchronises every field after
+  the first and only tag 1 resolves).
 - Tags: 1 embed [50304,2048] bf16; 2 routers 16×[64,2048] bf16; 3 norms
   33×[2048] as stored (bf16); 4 attn per-layer q,k,v,o [4,2048,2048] bf16;
   5 head [50304,2048] bf16; 6 rope_cos [16,64] fp32; 7 rope_sin [16,64]
   fp32; 8 qk_norms 32×[2048] bf16 (rows q0,k0,q1,k1…).
 - RoPE tables are host-exact fp32 (theta 10000, head_dim 128, Llama-style
   half rotation — validated against transformers); firmware trig was
-  rejected (Taylor error ~0.2 at π flips routes).
+  rejected (Taylor error ~0.2 at π flips routes). Tag 8 exists because
+  `q_norm`/`k_norm` are *learned* RMSNorms applied to the full 2048-vector
+  before the head reshape; omitting them diverges the routes.
 - MAXPOS = 16 tokens (prompt + short decode + margin); KV sized to match.
-- Rationale: LBA-0 format untouched (old images still boot to the storage
-  probe); the kernel finds the directory without trusting any offset.
+- Peak static footprint ≈ 86 MiB (expert 12.6 + attn 33.6 + head 25.7 + KV 8
+  + pinned 9), inside the 127 MiB link region — checked at build time.

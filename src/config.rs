@@ -87,10 +87,18 @@ const fn parse_usize(opt: Option<&str>) -> Option<usize> {
 pub const LAYER_TABLE_MAGIC: u32 = 0x0000_AE86;
 /// Fixed root: LBA 0 / byte offset 0 of the flat blob.
 pub const LAYER_TABLE_LBA: u64 = 0;
-/// Directory block: FIXED LBA 1 (magic2, count, tag/offset/len/dtype entries).
-/// Written by tools/pack_olmoe_full.py; backward compatible with LBA-0-only images.
-pub const DIR_LBA: u64 = 1;
+/// Directory magic: 16-bit 0xAE87 signature zero-extended to u32.
 pub const DIR_MAGIC: u32 = 0x0000_AE87;
+
+/// LBA of the tensor directory: immediately after the expert region, derived
+/// from the LBA-0 table (never hardcoded — LBA 1 is expert (0,0)'s head, an
+/// empirically costly bug: it made the boot probe print the directory magic
+/// as "expert00 head", i.e. one expert was being overwritten).
+#[inline]
+pub const fn dir_lba_after_experts(base0: u64, expert_stride: u64) -> u64 {
+    (base0 + NUM_LAYERS as u64 * NUM_EXPERTS_PER_LAYER as u64 * expert_stride)
+        / STORAGE_BLOCK_SIZE as u64
+}
 /// OLMoE-1B-7B geometry (firmware decode path; Qwen profile needs its own).
 pub const NUM_HEADS: usize = 16;
 pub const NUM_KV_HEADS: usize = 16;

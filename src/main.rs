@@ -81,16 +81,38 @@ fn boot_fetch_and_run() -> Result<usize, ()> {
             lba0[o + 6], lba0[o + 7],
         ]);
     }
-    fetch::read_dir(&mut blk)?;
-    fetch::pin_resident(&mut blk)?;
+    // expert stride from the header (bytes 8..12)
+    let stride = u32::from_le_bytes([lba0[8], lba0[9], lba0[10], lba0[11]]) as u64;
+    if stride == 0 || stride % crate::config::STORAGE_BLOCK_SIZE as u64 != 0 {
+        uart::print("fail: stride\n");
+        return Err(());
+    }
+    // Directory sits right after the expert region; derived, never assumed.
+    let dir_lba = crate::config::dir_lba_after_experts(bases[0], stride);
+    uart::print("dir lba: ");
+    uart::print_hex_u64(dir_lba);
+    uart::print("\n");
+    match fetch::read_dir_at(&mut blk, dir_lba) {
+        Ok(n) => {
+            uart::print("dir entries: ");
+            uart::print_hex_u32(n as u32);
+            uart::print("\n");
+        }
+        Err(()) => {
+            uart::print("fail: dir magic/count\n");
+            return Err(());
+        }
+    }
+    if let Err(()) = fetch::pin_resident(&mut blk) {
+        uart::print("fail: pin_resident (tag/len/dtype mismatch or read error)\n");
+        return Err(());
+    }
     uart::print("resident pinned\n");
     if !crate::exec::selftest() {
         uart::print("exec selftest: FAIL\n");
         return Err(());
     }
     uart::print("exec selftest: PASS\n");
-    // expert stride from the header (bytes 8..12)
-    let stride = u32::from_le_bytes([lba0[8], lba0[9], lba0[10], lba0[11]]) as u64;
     let mut out = [0u32; 8];
     let n = infer::run(&mut blk, &bases, stride, &mut out)?;
     Ok(n)

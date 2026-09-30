@@ -23,7 +23,7 @@ pub const TAG_ROPE_SIN: u32 = 7;
 const DTYPE_BF16: u32 = 0;
 const _DTYPE_FP32: u32 = 1;
 
-/// One directory entry. Populated once at boot by [`read_dir`].
+/// One directory entry. Populated once at boot by [`read_dir_at`].
 #[derive(Clone, Copy, Debug)]
 pub struct DirEntry {
     pub tag: u32,
@@ -36,10 +36,11 @@ const DIR_MAX_ENTRIES: usize = 12;
 static mut DIR: [DirEntry; DIR_MAX_ENTRIES] = [DirEntry { tag: 0, offset: 0, len: 0, dtype: 0 }; DIR_MAX_ENTRIES];
 static mut DIR_LEN: usize = 0;
 
-/// Read and validate the LBA-1 directory. Returns entry count.
-pub fn read_dir<B: BlockStorage>(blk: &mut B) -> Result<usize, ()> {
+/// Read and validate the directory at `lba` (derived, not hardcoded — see
+/// config::dir_lba_after_experts). Returns entry count.
+pub fn read_dir_at<B: BlockStorage>(blk: &mut B, lba: u64) -> Result<usize, ()> {
     let mut raw = [0u8; 512];
-    blk.read_blocks(DIR_LBA, &mut raw).map_err(|_| ())?;
+    blk.read_blocks(lba, &mut raw).map_err(|_| ())?;
     let magic = u32::from_le_bytes([raw[0], raw[1], raw[2], raw[3]]);
     if magic != DIR_MAGIC {
         return Err(());
@@ -50,7 +51,11 @@ pub fn read_dir<B: BlockStorage>(blk: &mut B) -> Result<usize, ()> {
     }
     unsafe {
         for i in 0..count {
-            let o = 8 + i * 24;
+            // Stride 28, not 24: the packer writes '<IQQI4x' (tag 4 +
+            // offset 8 + len 8 + dtype 4 + 4 pad). Reading 24-byte entries
+            // desynchronises the field offsets after the first one, which is
+            // why every tag resolved to a garbage offset here.
+            let o = 8 + i * 28;
             DIR[i] = DirEntry {
                 tag: u32::from_le_bytes([raw[o], raw[o + 1], raw[o + 2], raw[o + 3]]),
                 offset: u64::from_le_bytes([
