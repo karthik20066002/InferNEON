@@ -1,9 +1,36 @@
-# InferNEON — bare-metal AArch64 MoE inference
+# InferNEON
+
+**InferNEON is a mechanism: fetch, cap, cancel, demand-beats-hint, max wait.**
+**Policy stays above it.**
+Qwen traces are the ruler. OLMoE-in-QEMU is proof the forward path exists.
+The Pi is later.
+
+That sentence defines the boundary, not a claim that every primitive is
+implemented. The current task is measurement, not more mechanism.
+
+## Current scope
+
+- Commit the reference traces and the single-lane simulator in
+  `inferneon-eval/` before extending anything.
+- “Oracle” means demand-time perfect IDs only: `predict(j) = D_j`.
+  Future-aware Belady eviction is a separate eviction comparison, not an oracle.
+- Measure decode-only exposed wait on both Qwen trace families: LRU/no hint,
+  B1 (previous token’s 8), and perfect IDs at matched `L ∈ {0, 1, 4, 40}`.
+  Bandwidth `100e6` and `413e6` bytes/s and compute slack are **assumed**;
+  start every prompt with an **empty cache**.
+- Deliver `inferneon-eval/reports/exposed_wait_matched_L.json`, one
+  exposed-wait plot, and a 10-line note. Capacity dominating or hints doing
+  nothing is a result, not a reason to change the experiment.
+- No cancel, in-flight cap, worst-case bound, new predictor, or `sim.engine`
+  rewrite before that JSON is committed. After measurement, choose at most
+  one primitive justified by it. Hardware waits for a laptop measurement;
+  CM4 stays Debian-on-SD, with no SSD work.
+
+## Forward-path proof
 
 Target (for now): QEMU `virt` machine, `-cpu cortex-a72`. No real hardware yet.
-Storage is backed by a QEMU `virtio-blk` flat image (`disk.img`); the
-flat-blob-at-fixed-offsets design is identical to the real-hardware plan so
-the later eMMC/PCIe swap is a backend swap, not a redesign.
+Storage is backed by a QEMU `virtio-blk` flat image. The OLMoE forward path
+is a functional proof, not a storage-performance or hardware result.
 
 Toolchain: Rust `no_std`, `aarch64-unknown-none`, `target-cpu=cortex-a72`.
 Build with `just` (see `justfile`). Output is a **flat binary**
@@ -18,7 +45,7 @@ part of the firmware build.
 - `src/main.rs` — entry (`kernel_main`), panic handler.
 - `src/boot.rs` — `_start`: FP enable, vectors, per-core stacks (MPIDR), BSS zero, park secondaries.
 - `src/{token,layer,gate,dispatch,cache,exec,combine,head,pipeline}.rs` — MoE pipeline steps 1–7.
-- `src/attn.rs` — sole KV/attention stub (NOT DESIGNED YET).
+- `src/attn.rs` — KV cache and attention.
 - `src/storage/{mod,virtio,emmc,pcie}.rs` — `BlockStorage` trait + backends.
 - `src/{uart,addr,sync,config}.rs` — platform support.
 - `docs/STORAGE_LAYOUT.md` — expert flat-blob spec (layer table + arithmetic).
