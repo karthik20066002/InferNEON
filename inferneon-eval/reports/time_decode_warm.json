@@ -1,0 +1,73 @@
+{
+  "label": "MEASURED",
+  "mode": "warm",
+  "assumed_test_parameters": {
+    "mode": "warm",
+    "tokens": 24,
+    "cache_mib": 512,
+    "no_drop_caches": false,
+    "allow_dirty": false,
+    "out": null
+  },
+  "prompt_tokens": 22,
+  "decode_tokens": 24,
+  "page_cache_dropped": true,
+  "delta_kernels": "fast",
+  "versions": {
+    "torch": "2.14.0",
+    "transformers": "5.17.0",
+    "safetensors": "0.8.0",
+    "flash-linear-attention": "0.5.2",
+    "fla-core": "0.5.2",
+    "causal-conv1d": "1.7.0",
+    "einops": "0.8.2"
+  },
+  "git_commit": "d97b93e1007505d77a2edb313cd052796deae4f1",
+  "git_dirty": true,
+  "git_tracked_dirty": false,
+  "source_sha256": {
+    "capture/stream_capture.py": "ab7d6ae632b3770ed1982d4f7ddd5d1fc1751ea880a96ec1cbbf2b8a4c62f4eb",
+    "scripts/time_decode.py": "0f2ff9742041bc878e0bc310eda658d802ee3e77fe650938648c7d4933e90d1c"
+  },
+  "prefill_seconds": 25.71056857700023,
+  "decode_seconds_per_token": [
+    2.8012641690002056,
+    3.341528892000497,
+    3.3269377690012334,
+    3.4977484660012124,
+    3.3554345869997633,
+    3.4928098950003914,
+    3.3757940020004753,
+    7.633196456001315,
+    3.5394444029989245,
+    3.3711903049988905,
+    3.5145375989995955,
+    3.400291122998169,
+    3.485729675001494,
+    8.129075983000803,
+    3.6586623799994413,
+    3.47007179999855,
+    3.5702474240024458,
+    3.34086591400046,
+    3.557294465997984,
+    3.4796658039995236,
+    3.5951875840000866,
+    3.6025398390011105,
+    3.6064728400015156,
+    3.6853591320032137
+  ],
+  "decode_median_seconds": 3.495279180500802,
+  "decode_mean_seconds": 3.826306271125304,
+  "decode_min_seconds": 2.8012641690002056,
+  "decode_max_seconds": 8.129075983000803,
+  "peak_vram_bytes": 4382736384,
+  "cache": {
+    "max_bytes": 536870912,
+    "bytes": 534773760,
+    "entries": 85,
+    "hits": 943,
+    "misses": 14417,
+    "bypasses": 14332
+  },
+  "output_text": "Thinking Process:\n\n1.  **Deconstruct the query:**\n    *   Topic: Why the sky is blue"
+}

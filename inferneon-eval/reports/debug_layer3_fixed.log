@@ -1,0 +1,25 @@
+W0928 20:25:13.069000 66402 .venv/lib/python3.12/site-packages/torch/utils/_pytree.py:630] <enum 'KernelPreference'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+W0928 20:25:13.091000 66402 .venv/lib/python3.12/site-packages/torch/utils/_pytree.py:630] <enum 'ScaleCalculationMode'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+deterministic on
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `chunk_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+layers 0-2 done, h finite=True
+layer 3 type: full_attention
+  input_layernorm: finite=True absmax=40.90625 dtype=torch.float16 shape=(1, 22, 2048)
+  causal_mask: finite=True absmax=1.0 dtype=torch.float32 shape=(1, 1, 22, 22)
+  mask dtype=torch.bool shape=(1, 1, 22, 22)
+  q_proj: finite=True absmax=13.453125 dtype=torch.float16 shape=(1, 22, 16, 512)
+  q_chunk: finite=True absmax=13.453125 dtype=torch.float16 shape=(1, 22, 16, 256)
+  gate_chunk: finite=True absmax=9.8828125 dtype=torch.float16 shape=(1, 22, 16, 256)
+  q_norm: finite=True absmax=10.3125 dtype=torch.float16 shape=(1, 16, 22, 256)
+  k_norm: finite=True absmax=12.328125 dtype=torch.float16 shape=(1, 2, 22, 256)
+  v_proj: finite=True absmax=3.30078125 dtype=torch.float16 shape=(1, 2, 22, 256)
+  q_rope: finite=True absmax=10.3125 dtype=torch.float16 shape=(1, 16, 22, 256)
+  k_rope: finite=True absmax=12.328125 dtype=torch.float16 shape=(1, 2, 22, 256)
+  k_cached: finite=True absmax=12.328125 dtype=torch.float16 shape=(1, 2, 22, 256)
+  v_cached: finite=True absmax=3.30078125 dtype=torch.float16 shape=(1, 2, 22, 256)
+  attn interface: <function sdpa_attention_forward at 0x7fdaa2b41260>
+  attn_out: finite=True absmax=3.10546875 dtype=torch.float16 shape=(1, 22, 16, 256)
+  gated: finite=True absmax=1.1171875 dtype=torch.float16 shape=(1, 22, 4096)
+  o_proj: finite=True absmax=0.4931640625 dtype=torch.float16 shape=(1, 22, 2048)
+DONE

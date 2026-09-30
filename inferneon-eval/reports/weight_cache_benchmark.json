@@ -1,0 +1,1106 @@
+{
+  "label": "MEASURED",
+  "prompt": "Explain why the sky is blue in one short paragraph:",
+  "prompt_tokens": 22,
+  "assumed_test_parameters": {
+    "tokens": 1,
+    "cache_mib": 512,
+    "out": "reports/weight_cache_benchmark.json"
+  },
+  "seed": 0,
+  "deterministic_algorithms": false,
+  "versions": {
+    "torch": "2.14.0",
+    "transformers": "5.17.0",
+    "safetensors": "0.8.0"
+  },
+  "checkpoint_config_sha256": "cd5eb69082a3203396a50e88eb3d259799f4f90209104313ac33ffae19a5fb56",
+  "source_sha256": {
+    "capture/stream_capture.py": "66d2b00095bd9002a1c4ee7f805a064280d65751925a839f5c4d613fbbd68887",
+    "capture/dequant.py": "72582a5ec8ea8dbc1e72eeb3e2b48b0c60fc61f6a6fb795f51255f3c77cc6321",
+    "capture/weight_cache.py": "e572ec8e612c9a032b5fe6bb875fde5d5fdc32f86a24a6e01987a2fdc647055f",
+    "scripts/benchmark_weight_cache.py": "1732c02a47f4d237369ef7ce476b50add7d2a3a7f53afaa3a4bfa6d3032a3685"
+  },
+  "runs": {
+    "off1": {
+      "prefill_seconds": 58.57012816000042,
+      "decode_seconds": [
+        9.081673212000169
+      ],
+      "tokens": [
+        90700
+      ],
+      "cache": {
+        "max_bytes": 0,
+        "bytes": 0,
+        "entries": 0,
+        "hits": 0,
+        "misses": 320,
+        "bypasses": 320
+      },
+      "peak_vram_bytes": 3855632384,
+      "logits_sha256": "22786ecf6a8de6853fa147ee18d42b44c8aac1b34bc877f5cb24c165f3850596",
+      "exact_vs_uncached": true,
+      "router_pairs_validated": 920
+    },
+    "off2": {
+      "prefill_seconds": 60.17269096600012,
+      "decode_seconds": [
+        8.85087712799941
+      ],
+      "tokens": [
+        90700
+      ],
+      "cache": {
+        "max_bytes": 0,
+        "bytes": 0,
+        "entries": 0,
+        "hits": 0,
+        "misses": 320,
+        "bypasses": 320
+      },
+      "peak_vram_bytes": 3855632384,
+      "logits_sha256": "7a583b2908dabbe2b61515ff878c80a00735474dda5a93f37ca3d4184769e2a8",
+      "exact_vs_uncached": true,
+      "router_pairs_validated": 920,
+      "comparison_vs_off1": {
+        "max_logit_delta": 0.619140625,
+        "max_hidden_delta": 0.2529296875,
+        "max_router_delta": 0.23828125,
+        "lm_argmax_same": 2,
+        "lm_argmax_total": 2,
+        "route_mismatch_count": 228,
+        "route_mismatches": [
+          [
+            1,
+            34
+          ],
+          [
+            2,
+            4
+          ],
+          [
+            2,
+            14
+          ],
+          [
+            2,
+            28
+          ],
+          [
+            2,
+            31
+          ],
+          [
+            2,
+            32
+          ],
+          [
+            3,
+            5
+          ],
+          [
+            3,
+            6
+          ],
+          [
+            3,
+            9
+          ],
+          [
+            3,
+            13
+          ],
+          [
+            3,
+            23
+          ],
+          [
+            3,
+            29
+          ],
+          [
+            3,
+            34
+          ],
+          [
+            3,
+            35
+          ],
+          [
+            3,
+            36
+          ],
+          [
+            3,
+            37
+          ],
+          [
+            4,
+            30
+          ],
+          [
+            4,
+            35
+          ],
+          [
+            5,
+            5
+          ],
+          [
+            5,
+            6
+          ],
+          [
+            5,
+            8
+          ],
+          [
+            5,
+            10
+          ],
+          [
+            5,
+            23
+          ],
+          [
+            6,
+            25
+          ],
+          [
+            6,
+            28
+          ],
+          [
+            6,
+            36
+          ],
+          [
+            7,
+            3
+          ],
+          [
+            7,
+            5
+          ],
+          [
+            7,
+            6
+          ],
+          [
+            7,
+            7
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            7,
+            9
+          ]
+        ]
+      }
+    },
+    "cold": {
+      "prefill_seconds": 52.26073840599929,
+      "decode_seconds": [
+        9.262226120000378
+      ],
+      "tokens": [
+        90700
+      ],
+      "cache": {
+        "max_bytes": 536870912,
+        "bytes": 534773760,
+        "entries": 85,
+        "hits": 0,
+        "misses": 320,
+        "bypasses": 235
+      },
+      "peak_vram_bytes": 4382264320,
+      "logits_sha256": "9fbbb74e8a494d004a811aba98fe4bcb040d6080824105a9677d6ba8058e39b3",
+      "exact_vs_uncached": false,
+      "router_pairs_validated": 920,
+      "comparison_vs_off1": {
+        "max_logit_delta": 0.6171875,
+        "max_hidden_delta": 0.2392578125,
+        "max_router_delta": 0.2421875,
+        "lm_argmax_same": 2,
+        "lm_argmax_total": 2,
+        "route_mismatch_count": 228,
+        "route_mismatches": [
+          [
+            1,
+            34
+          ],
+          [
+            1,
+            35
+          ],
+          [
+            2,
+            4
+          ],
+          [
+            2,
+            6
+          ],
+          [
+            2,
+            14
+          ],
+          [
+            2,
+            28
+          ],
+          [
+            2,
+            31
+          ],
+          [
+            2,
+            32
+          ],
+          [
+            3,
+            5
+          ],
+          [
+            3,
+            6
+          ],
+          [
+            3,
+            9
+          ],
+          [
+            3,
+            13
+          ],
+          [
+            3,
+            23
+          ],
+          [
+            3,
+            29
+          ],
+          [
+            3,
+            34
+          ],
+          [
+            3,
+            35
+          ],
+          [
+            3,
+            36
+          ],
+          [
+            3,
+            37
+          ],
+          [
+            5,
+            5
+          ],
+          [
+            5,
+            6
+          ],
+          [
+            5,
+            8
+          ],
+          [
+            5,
+            10
+          ],
+          [
+            5,
+            23
+          ],
+          [
+            5,
+            27
+          ],
+          [
+            6,
+            25
+          ],
+          [
+            6,
+            28
+          ],
+          [
+            7,
+            3
+          ],
+          [
+            7,
+            5
+          ],
+          [
+            7,
+            6
+          ],
+          [
+            7,
+            7
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            7,
+            9
+          ]
+        ]
+      }
+    },
+    "warm": {
+      "prefill_seconds": 78.3725216769999,
+      "decode_seconds": [
+        6.9876241399997525
+      ],
+      "tokens": [
+        90700
+      ],
+      "cache": {
+        "max_bytes": 536870912,
+        "bytes": 534773760,
+        "entries": 85,
+        "hits": 85,
+        "misses": 555,
+        "bypasses": 470
+      },
+      "peak_vram_bytes": 4390406144,
+      "logits_sha256": "321f794f87669d5c3745507aefc1dba44101580fe9fa7ff1dfe0eae29a5d9431",
+      "exact_vs_uncached": false,
+      "router_pairs_validated": 920,
+      "comparison_vs_off1": {
+        "max_logit_delta": 0.638671875,
+        "max_hidden_delta": 0.2373046875,
+        "max_router_delta": 0.23828125,
+        "lm_argmax_same": 2,
+        "lm_argmax_total": 2,
+        "route_mismatch_count": 228,
+        "route_mismatches": [
+          [
+            1,
+            21
+          ],
+          [
+            2,
+            4
+          ],
+          [
+            2,
+            6
+          ],
+          [
+            2,
+            14
+          ],
+          [
+            2,
+            31
+          ],
+          [
+            2,
+            32
+          ],
+          [
+            3,
+            5
+          ],
+          [
+            3,
+            6
+          ],
+          [
+            3,
+            9
+          ],
+          [
+            3,
+            13
+          ],
+          [
+            3,
+            23
+          ],
+          [
+            3,
+            29
+          ],
+          [
+            3,
+            34
+          ],
+          [
+            3,
+            35
+          ],
+          [
+            3,
+            36
+          ],
+          [
+            3,
+            37
+          ],
+          [
+            4,
+            30
+          ],
+          [
+            4,
+            35
+          ],
+          [
+            5,
+            5
+          ],
+          [
+            5,
+            6
+          ],
+          [
+            5,
+            8
+          ],
+          [
+            5,
+            10
+          ],
+          [
+            6,
+            25
+          ],
+          [
+            6,
+            28
+          ],
+          [
+            7,
+            3
+          ],
+          [
+            7,
+            5
+          ],
+          [
+            7,
+            6
+          ],
+          [
+            7,
+            7
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            7,
+            9
+          ],
+          [
+            7,
+            12
+          ],
+          [
+            7,
+            17
+          ]
+        ]
+      }
+    }
+  },
+  "git_commit": null,
+  "git_dirty": true,
+  "cached_tensor_digests_unchanged": true,
+  "cached_entries_checked": 85,
+  "cache_corruption_check": {
+    "cold": {
+      "natural_repeat_mismatches": [
+        [
+          1,
+          34
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          2,
+          14
+        ],
+        [
+          2,
+          28
+        ],
+        [
+          2,
+          31
+        ],
+        [
+          2,
+          32
+        ],
+        [
+          3,
+          5
+        ],
+        [
+          3,
+          6
+        ],
+        [
+          3,
+          9
+        ],
+        [
+          3,
+          13
+        ],
+        [
+          3,
+          23
+        ],
+        [
+          3,
+          29
+        ],
+        [
+          3,
+          34
+        ],
+        [
+          3,
+          35
+        ],
+        [
+          3,
+          36
+        ],
+        [
+          3,
+          37
+        ],
+        [
+          4,
+          30
+        ],
+        [
+          4,
+          35
+        ],
+        [
+          5,
+          5
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          5,
+          8
+        ],
+        [
+          5,
+          10
+        ],
+        [
+          5,
+          23
+        ],
+        [
+          6,
+          25
+        ],
+        [
+          6,
+          28
+        ],
+        [
+          6,
+          36
+        ],
+        [
+          7,
+          3
+        ],
+        [
+          7,
+          5
+        ],
+        [
+          7,
+          6
+        ],
+        [
+          7,
+          7
+        ],
+        [
+          7,
+          8
+        ],
+        [
+          7,
+          9
+        ]
+      ],
+      "observed_mismatches": [
+        [
+          1,
+          34
+        ],
+        [
+          1,
+          35
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          2,
+          6
+        ],
+        [
+          2,
+          14
+        ],
+        [
+          2,
+          28
+        ],
+        [
+          2,
+          31
+        ],
+        [
+          2,
+          32
+        ],
+        [
+          3,
+          5
+        ],
+        [
+          3,
+          6
+        ],
+        [
+          3,
+          9
+        ],
+        [
+          3,
+          13
+        ],
+        [
+          3,
+          23
+        ],
+        [
+          3,
+          29
+        ],
+        [
+          3,
+          34
+        ],
+        [
+          3,
+          35
+        ],
+        [
+          3,
+          36
+        ],
+        [
+          3,
+          37
+        ],
+        [
+          5,
+          5
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          5,
+          8
+        ],
+        [
+          5,
+          10
+        ],
+        [
+          5,
+          23
+        ],
+        [
+          5,
+          27
+        ],
+        [
+          6,
+          25
+        ],
+        [
+          6,
+          28
+        ],
+        [
+          7,
+          3
+        ],
+        [
+          7,
+          5
+        ],
+        [
+          7,
+          6
+        ],
+        [
+          7,
+          7
+        ],
+        [
+          7,
+          8
+        ],
+        [
+          7,
+          9
+        ]
+      ],
+      "new_mismatches_beyond_off_repeat": [
+        [
+          1,
+          35
+        ],
+        [
+          2,
+          6
+        ],
+        [
+          5,
+          27
+        ]
+      ]
+    },
+    "warm": {
+      "natural_repeat_mismatches": [
+        [
+          1,
+          34
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          2,
+          14
+        ],
+        [
+          2,
+          28
+        ],
+        [
+          2,
+          31
+        ],
+        [
+          2,
+          32
+        ],
+        [
+          3,
+          5
+        ],
+        [
+          3,
+          6
+        ],
+        [
+          3,
+          9
+        ],
+        [
+          3,
+          13
+        ],
+        [
+          3,
+          23
+        ],
+        [
+          3,
+          29
+        ],
+        [
+          3,
+          34
+        ],
+        [
+          3,
+          35
+        ],
+        [
+          3,
+          36
+        ],
+        [
+          3,
+          37
+        ],
+        [
+          4,
+          30
+        ],
+        [
+          4,
+          35
+        ],
+        [
+          5,
+          5
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          5,
+          8
+        ],
+        [
+          5,
+          10
+        ],
+        [
+          5,
+          23
+        ],
+        [
+          6,
+          25
+        ],
+        [
+          6,
+          28
+        ],
+        [
+          6,
+          36
+        ],
+        [
+          7,
+          3
+        ],
+        [
+          7,
+          5
+        ],
+        [
+          7,
+          6
+        ],
+        [
+          7,
+          7
+        ],
+        [
+          7,
+          8
+        ],
+        [
+          7,
+          9
+        ]
+      ],
+      "observed_mismatches": [
+        [
+          1,
+          21
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          2,
+          6
+        ],
+        [
+          2,
+          14
+        ],
+        [
+          2,
+          31
+        ],
+        [
+          2,
+          32
+        ],
+        [
+          3,
+          5
+        ],
+        [
+          3,
+          6
+        ],
+        [
+          3,
+          9
+        ],
+        [
+          3,
+          13
+        ],
+        [
+          3,
+          23
+        ],
+        [
+          3,
+          29
+        ],
+        [
+          3,
+          34
+        ],
+        [
+          3,
+          35
+        ],
+        [
+          3,
+          36
+        ],
+        [
+          3,
+          37
+        ],
+        [
+          4,
+          30
+        ],
+        [
+          4,
+          35
+        ],
+        [
+          5,
+          5
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          5,
+          8
+        ],
+        [
+          5,
+          10
+        ],
+        [
+          6,
+          25
+        ],
+        [
+          6,
+          28
+        ],
+        [
+          7,
+          3
+        ],
+        [
+          7,
+          5
+        ],
+        [
+          7,
+          6
+        ],
+        [
+          7,
+          7
+        ],
+        [
+          7,
+          8
+        ],
+        [
+          7,
+          9
+        ],
+        [
+          7,
+          12
+        ],
+        [
+          7,
+          17
+        ]
+      ],
+      "new_mismatches_beyond_off_repeat": [
+        [
+          1,
+          21
+        ],
+        [
+          2,
+          6
+        ],
+        [
+          7,
+          12
+        ],
+        [
+          7,
+          17
+        ]
+      ]
+    },
+    "envelope": {
+      "cold": {
+        "route_count_same_as_uncached_repeat": true,
+        "lm_argmax_same": true,
+        "all_finite": true,
+        "max_logit_delta": 0.6171875,
+        "max_hidden_delta": 0.2392578125,
+        "max_router_delta": 0.2421875
+      },
+      "warm": {
+        "route_count_same_as_uncached_repeat": true,
+        "lm_argmax_same": true,
+        "all_finite": true,
+        "max_logit_delta": 0.638671875,
+        "max_hidden_delta": 0.2373046875,
+        "max_router_delta": 0.23828125
+      }
+    }
+  },
+  "output_text": "Thinking",
+  "status": "PASS"
+}

@@ -1,0 +1,22 @@
+W0928 17:41:14.110000 19709 .venv/lib/python3.12/site-packages/torch/utils/_pytree.py:630] <enum 'KernelPreference'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+W0928 17:41:14.138000 19709 .venv/lib/python3.12/site-packages/torch/utils/_pytree.py:630] <enum 'ScaleCalculationMode'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+RUN off1
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `chunk_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+[transformers] `causal_conv1d_update` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `fused_recurrent_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+  decode 1/1: 9.082s token=90700
+off1: prefill=58.570s cache={'max_bytes': 0, 'bytes': 0, 'entries': 0, 'hits': 0, 'misses': 320, 'bypasses': 320} EXACT PASS
+RUN off2
+  decode 1/1: 8.851s token=90700
+off2: route_mismatches=228 argmax=2/2
+off2: prefill=60.173s cache={'max_bytes': 0, 'bytes': 0, 'entries': 0, 'hits': 0, 'misses': 320, 'bypasses': 320} EXACT PASS
+RUN cold
+  decode 1/1: 9.262s token=90700
+cold: route_mismatches=228 argmax=2/2
+cold: prefill=52.261s cache={'max_bytes': 536870912, 'bytes': 534773760, 'entries': 85, 'hits': 0, 'misses': 320, 'bypasses': 235} EXACT PASS
+RUN warm
+  decode 1/1: 6.988s token=90700
+warm: route_mismatches=228 argmax=2/2
+warm: prefill=78.373s cache={'max_bytes': 536870912, 'bytes': 534773760, 'entries': 85, 'hits': 85, 'misses': 555, 'bypasses': 470} EXACT PASS
+CORRUPTION CHECK: REVIEW; output: 'Thinking'

@@ -6,3 +6,9 @@ disk-olmoe.img
 layer_table.bin
 models/
 *.img
+.olmoe_offload/
+*.safetensors
+kernel.bin.prev
+__agent__/
+.venv/
+.pytest_cache/

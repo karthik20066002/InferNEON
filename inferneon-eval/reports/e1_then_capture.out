@@ -1,0 +1,9 @@
+worker loaded ref: 149640 positions
+worker loaded ref: 149640 positions
+worker loaded ref: 149640 positions
+ref cap=320 LRU                      hit=0.0027 B/tok=300485976
+ref cap=320 LeastStale               hit=0.0003 B/tok=370513110
+ref cap=320 LFU                      hit=0.0002 B/tok=363439217
+ref cap=320 LFU-halving-40           hit=0.0006 B/tok=346697738
+Terminated                 .venv/bin/python scripts/e1_lite.py
+35 prompts x 128 tokens

@@ -1,0 +1,5 @@
+8186 positions, 205 tokens
+cap=  320 LRU                      hit=0.0000 B/tok=12816193901
+cap=  320 LFU                      hit=0.0000 B/tok=12816193901
+cap=  320 LFU-halving-40           hit=0.0000 B/tok=12816193901
+cap=  320 LeastStale               hit=0.0000 B/tok=12816193901

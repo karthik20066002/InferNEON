@@ -1,0 +1,73 @@
+{
+  "label": "MEASURED",
+  "mode": "cold",
+  "assumed_test_parameters": {
+    "mode": "cold",
+    "tokens": 24,
+    "cache_mib": 512,
+    "no_drop_caches": false,
+    "allow_dirty": false,
+    "out": null
+  },
+  "prompt_tokens": 22,
+  "decode_tokens": 24,
+  "page_cache_dropped": true,
+  "delta_kernels": "fast",
+  "versions": {
+    "torch": "2.14.0",
+    "transformers": "5.17.0",
+    "safetensors": "0.8.0",
+    "flash-linear-attention": "0.5.2",
+    "fla-core": "0.5.2",
+    "causal-conv1d": "1.7.0",
+    "einops": "0.8.2"
+  },
+  "git_commit": "d97b93e1007505d77a2edb313cd052796deae4f1",
+  "git_dirty": true,
+  "git_tracked_dirty": false,
+  "source_sha256": {
+    "capture/stream_capture.py": "ab7d6ae632b3770ed1982d4f7ddd5d1fc1751ea880a96ec1cbbf2b8a4c62f4eb",
+    "scripts/time_decode.py": "0f2ff9742041bc878e0bc310eda658d802ee3e77fe650938648c7d4933e90d1c"
+  },
+  "prefill_seconds": 60.89986184299778,
+  "decode_seconds_per_token": [
+    3.826460988002509,
+    3.44712964199789,
+    3.3275978380006563,
+    3.464474746000633,
+    3.45562565200089,
+    3.553532821002591,
+    3.3255252499984636,
+    7.698295913996844,
+    3.7782650450026267,
+    3.6030720459966687,
+    3.747203601000365,
+    3.550876490000519,
+    8.036249944998417,
+    3.5540769930012175,
+    3.8317846809986804,
+    3.6589049130016065,
+    3.6231642400016426,
+    7.932452302000456,
+    3.6796821230018395,
+    3.555057860998204,
+    3.8203579310029454,
+    3.662673029000871,
+    3.663671616999636,
+    3.740365353998641
+  ],
+  "decode_median_seconds": 3.6607889710012387,
+  "decode_mean_seconds": 4.1473542092502,
+  "decode_min_seconds": 3.3255252499984636,
+  "decode_max_seconds": 8.036249944998417,
+  "peak_vram_bytes": 4382736384,
+  "cache": {
+    "max_bytes": 536870912,
+    "bytes": 534773760,
+    "entries": 85,
+    "hits": 429,
+    "misses": 7251,
+    "bypasses": 7166
+  },
+  "output_text": "Thinking Process:\n\n1.  **Deconstruct the query:**\n    *   Topic: Why the sky is blue"
+}

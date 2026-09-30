@@ -1,0 +1,20 @@
+W0929 05:09:33.194000 106672 .venv/lib/python3.12/site-packages/torch/utils/_pytree.py:630] <enum 'KernelPreference'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+W0929 05:09:33.274000 106672 .venv/lib/python3.12/site-packages/torch/utils/_pytree.py:630] <enum 'ScaleCalculationMode'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+  decode 1/1: 11.299s token=8160
+wrote reports/drift_35_top16/code_calib_01_fla.json: 88 records x 40 layers, logits 8f26c29f1a61, kernels=fast
+>
+    main()
+  File "/home/axiss/Documents/projects/InferNEON/inferneon-eval/scripts/dump_routes.py", line 73, in main
+    sc = StreamCapture(str(model))
+         ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/axiss/Documents/projects/InferNEON/inferneon-eval/capture/stream_capture.py", line 63, in __init__
+    self._materialize_resident()
+  File "/home/axiss/Documents/projects/InferNEON/inferneon-eval/capture/stream_capture.py", line 91, in _materialize_resident
+    self._get(f"{PREFIX}embed_tokens.weight").to(dev).to(dt))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+torch.AcceleratorError: CUDA error: out of memory
+Search for `cudaErrorMemoryAllocation' in https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__TYPES.html for more information.
+The CUDA driver logged these messages, which may provide useful details:
+Returning 2 (CUDA_ERROR_OUT_OF_MEMORY) from cuDevicePrimaryCtxRetain
+
+

@@ -1,0 +1,40 @@
+# InferNEON eval defaults — ASSUMED until locked
+# Split-by-prompt before any run. Tune on calibration only, then lock to configs/locked.yaml + sha256.
+
+model:
+  repo_id: "palmfuture/Qwen3.6-35B-A3B-GPTQ-Int4"  # ASSUMED primary, pending dtype verify
+  upstream_repo_id: "Qwen/Qwen3.6-35B-A3B"
+  upstream_rev: "995ad96eacd98c81ed38be0c5b274b04031597b0"  # MEASURED
+  transformers_pin: "5.17.0"  # MEASURED supports qwen3_5_moe; 4.57.1 does NOT
+  trust_remote_code: false
+  text_only: true  # ignore vision; record whether MTP loaded, don't use
+
+decoding:
+  batch_size: 1
+  mode: "greedy"
+  seed: 0
+  max_new_tokens: 512  # minimum per prompt where model will go that long
+  chat_template: true
+
+splits:
+  by: "prompt"  # whole prompts only, never split one prompt across sets
+  per_domain: {calibration: 3, heldout: 4}  # confirmed: 7 per domain, 35 total
+  domains: ["code", "chat", "math", "tamil_hindi", "summarization"]
+
+sim_defaults:
+  GOPS_sustained: 10  # ASSUMED; sweep [5, 10, 20]
+  T_expert_compute: "2*3145728/GOPS_sustained"  # derived, ASSUMED
+  NVMe_B: [400e6, 45e6, 21e6]  # bytes/s, default 400e6 ASSUMED
+  t_req: 100e-6  # per-request overhead, ASSUMED
+  Q_dev: 32  # device queue depth, ASSUMED
+  tile_bytes: 262144  # 256 KiB default, sweep 64KiB-1.5MiB ASSUMED
+  capacities_slots: [320, 640, 1000, 2000, 3000, 4000, 6500]  # confirmed
+  expert_precision: ["INT4", "2-bit"]  # sweep
+  speculation_cap_bytes: "one_tile"  # R2 default
+
+reporting:
+  compare: ["median", "mean"]  # confirmed + P50/P95 where brief requires
+  labels: ["MEASURED", "SIMULATED", "ASSUMED"]  # every number carries one
+
+provenance:
+  log: ["config_hash", "git_commit", "lib_versions", "model_rev", "seed"]

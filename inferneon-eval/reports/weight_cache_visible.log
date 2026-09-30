@@ -1,0 +1,36 @@
+W0928 17:12:04.414000 12718 .venv/lib/python3.12/site-packages/torch/utils/_pytree.py:630] <enum 'KernelPreference'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+W0928 17:12:04.440000 12718 .venv/lib/python3.12/site-packages/torch/utils/_pytree.py:630] <enum 'ScaleCalculationMode'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+RUN off
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `chunk_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+[transformers] `causal_conv1d_update` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `fused_recurrent_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+  decode 1/1: 4.324s token=90700
+off: prefill=60.663s cache={'max_bytes': 0, 'bytes': 0, 'entries': 0, 'hits': 0, 'misses': 320, 'bypasses': 320} EXACT PASS
+RUN cold
+  decode 1/1: 8.789s token=90700
+Traceback (most recent call last):
+  File "/home/axiss/Documents/projects/InferNEON/inferneon-eval/scripts/benchmark_weight_cache.py", line 93, in compare
+    torch.testing.assert_close(x, y, rtol=0, atol=0)
+  File "/home/axiss/Documents/projects/InferNEON/inferneon-eval/.venv/lib/python3.12/site-packages/torch/testing/_comparison.py", line 1689, in assert_close
+    raise error_metas[0].to_error(msg)
+AssertionError: Tensor-likes are not equal!
+
+Mismatched elements: 246040 / 248320 (99.1%)
+Greatest absolute difference: 0.33203125 at index (28990,)
+Greatest relative difference: 5027.5712890625 at index (88673,)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/axiss/Documents/projects/InferNEON/inferneon-eval/scripts/benchmark_weight_cache.py", line 173, in <module>
+    main()
+  File "/home/axiss/Documents/projects/InferNEON/inferneon-eval/scripts/benchmark_weight_cache.py", line 151, in main
+    compare(baseline, result)
+  File "/home/axiss/Documents/projects/InferNEON/inferneon-eval/scripts/benchmark_weight_cache.py", line 95, in compare
+    raise AssertionError(f'logit mismatch at result step {step}: {exc}') from exc
+AssertionError: logit mismatch at result step 0: Tensor-likes are not equal!
+
+Mismatched elements: 246040 / 248320 (99.1%)
+Greatest absolute difference: 0.33203125 at index (28990,)
+Greatest relative difference: 5027.5712890625 at index (88673,)

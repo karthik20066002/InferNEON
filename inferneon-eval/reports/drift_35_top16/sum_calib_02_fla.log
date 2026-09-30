@@ -1,0 +1,4 @@
+W0929 06:19:32.160000 123595 .venv/lib/python3.12/site-packages/torch/utils/_pytree.py:630] <enum 'KernelPreference'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+W0929 06:19:32.240000 123595 .venv/lib/python3.12/site-packages/torch/utils/_pytree.py:630] <enum 'ScaleCalculationMode'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+  decode 1/1: 9.772s token=8160
+wrote reports/drift_35_top16/sum_calib_02_fla.json: 112 records x 40 layers, logits 66be84fe0df1, kernels=fast

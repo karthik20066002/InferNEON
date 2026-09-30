@@ -1,0 +1,9 @@
+Resolved 58 packages in 45ms
+   Building causal-conv1d==1.7.0
+      Built causal-conv1d==1.7.0
+Prepared 1 package in 7m 22s
+Installed 4 packages in 12ms
+ + causal-conv1d==1.7.0
+ + einops==0.8.2
+ + fla-core==0.5.2
+ + flash-linear-attention==0.5.2
