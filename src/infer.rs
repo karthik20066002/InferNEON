@@ -218,6 +218,14 @@ fn forward_token<B: crate::storage::BlockStorage>(
 ) -> Result<(), ()> {
     unsafe {
         fetch::fetch_embed_row(blk, tok, &mut H_BUF)?;
+        // Progress: a QEMU-TCG forward is minutes, not milliseconds, and the
+        // whole proof hangs on whether 7 of them fit in the run budget. Print
+        // per-forward so the pace is observable instead of guessed at.
+        uart::print("fwd tok:");
+        uart::print_hex_u32(tok);
+        uart::print(" pos:");
+        uart::print_hex_u32(t as u32);
+        uart::print("\n");
         for li in 0..16usize {
             layer_forward(blk, li, t, layer_bases[li], expert_stride)?;
         }
@@ -247,6 +255,13 @@ fn greedy_head<B: crate::storage::BlockStorage>(blk: &mut B) -> Result<u32, ()> 
                     best_id = (s * fetch::HEAD_SHARD_ROWS + r) as u32;
                 }
             }
+            // Stream the head argmax per shard: a single 50k-row pass is long
+            // enough under TCG to look like a hang without a heartbeat.
+            uart::print("head shard:");
+            uart::print_hex_u32(s as u32);
+            uart::print(" best:");
+            uart::print_hex_u32(best_id);
+            uart::print("\n");
         }
     }
     Ok(best_id)
