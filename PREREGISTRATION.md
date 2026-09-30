@@ -1,6 +1,21 @@
 # Preregistration — InferNEON routing and cache metrics
 
-## Current scope — matched-L exposed wait (supersedes prior headlines)
+## One robustness check — prefill-warm cache
+
+Locked before the warm run: repeat the same matched-L grid, both families,
+20 held-out prompts, all seven capacities including 320 and 6500, with only
+initial cache state changed. ASSUMED priming: demand-only LRU over each
+prompt's recorded prefill in token-then-layer order, at the scored capacity.
+Carry its resident keys and LRU order into decode; exclude all prefill
+wait/bytes/counters, start the lane idle, and retain the cold run's B1
+history rule (no first-decode-token hint). No cross-prompt state or extra
+hint lead time. All bandwidth/slack/payload assumptions below remain fixed.
+Run `python3 scripts/exposed_wait_matched_L.py --warm-prefill`; write the
+same-shaped `reports/exposed_wait_matched_L_warm.json` and a two-line note.
+Compare against the untouched cold JSON. If B1 still ties no hint at 320
+warm, stop. No new predictor, primitive, firmware change, or further sweep.
+
+## Cold comparison — matched-L exposed wait (supersedes prior headlines)
 
 Locked before the matched-L runs. Reason: unequal lookahead and per-hint
 bandwidth arithmetic cannot establish whether hints help one storage lane.

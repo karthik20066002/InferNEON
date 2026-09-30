@@ -2,11 +2,15 @@
 """The locked decode-only matched-L measurement; stdlib only, sequential.
 
 Run from any directory: python scripts/exposed_wait_matched_L.py
-Writes reports/exposed_wait_matched_L.{json,svg}. No fitting, recall scoring,
-Belady, hardware timing, or new queue primitive. See PREREGISTRATION.md.
+Writes reports/exposed_wait_matched_L.{json,svg}. With --warm-prefill,
+prime only the cache from that prompt's prefill and write the same-shaped
+reports/exposed_wait_matched_L_warm.json (no additional plot).
+No fitting, recall scoring, Belady, hardware timing, or new queue primitive.
+See PREREGISTRATION.md.
 """
 from __future__ import annotations
 
+import argparse
 import hashlib
 import json
 import math
@@ -19,7 +23,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from sim.engine import events_from_routed
-from sim.eviction import EXPERT_BYTES
+from sim.eviction import EXPERT_BYTES, LRU
 from sim.predictors import PerfectIDs, PreviousToken8, no_hint
 from sim.queue import run_laned
 
@@ -43,8 +47,8 @@ def sha256(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def load_prompt(path, expected_kernel):
-    """Validate a complete capture; replay only decode, with no prefill state."""
+def load_prompt(path, expected_kernel, *, warm_prefill=False):
+    """Validate a capture; optionally retain unscored prefill for cache priming."""
     with path.open() as stream:
         header = json.loads(next(stream))
         if header.get('type') != 'header' or header.get('prompt_id') != path.stem:
@@ -52,6 +56,7 @@ def load_prompt(path, expected_kernel):
         if header.get('delta_kernels') != expected_kernel:
             raise ValueError(f'{path}: wrong trace family')
         decoded = []
+        prefilled = []
         prefill = 0
         for expected_t, line in enumerate(stream):
             row = json.loads(line)
@@ -61,24 +66,28 @@ def load_prompt(path, expected_kernel):
                 if decoded:
                     raise ValueError(f'{path}: prefill after decode')
                 prefill += 1
-                continue
-            if row['phase'] != 'decode':
+                if not warm_prefill:
+                    continue
+            elif row['phase'] != 'decode':
                 raise ValueError(f'{path}: unknown phase')
-            layers = row['top8']
-            if len(layers) != LAYERS or any(
+            layers = row.get('top8')
+            if not isinstance(layers, list) or len(layers) != LAYERS or any(
                 any(type(e) is not int or not 0 <= e < 256 for e in ids)
                 for ids in layers
             ):
                 raise ValueError(f'{path}: invalid layer count or expert IDs')
-            decoded.append(layers)
+            (prefilled if row['phase'] == 'prefill' else decoded).append(layers)
     if not decoded or len(decoded) != header['decode_target']:
         raise ValueError(f'{path}: incomplete decode')
     if prefill != header['prompt_tokens']:
         raise ValueError(f'{path}: incomplete prefill')
-    fused = events_from_routed(path.stem, decoded)
-    events = [(event.token_index,
-               frozenset((event.layer, e) for e in event.experts)) for event in fused]
+    def fused_events(records):
+        return [(event.token_index, frozenset((event.layer, e) for e in event.experts))
+                for event in events_from_routed(path.stem, records)]
+
+    events = fused_events(decoded)
     return {'header': header, 'events': events,
+            'prefill_events': fused_events(prefilled) if warm_prefill else None,
             'input': {'prompt_id': path.stem, 'sha256': sha256(path),
                       'decode_tokens': len(decoded), 'prefill_tokens_excluded': prefill,
                       'demand_events': len(events)}}
@@ -93,15 +102,27 @@ def validate_pairs(families):
                 raise ValueError(f'trace families differ in {field}')
 
 
-def run_case(prompts, family, bandwidth, capacity, policy, lookahead):
+def run_case(prompts, family, bandwidth, capacity, policy, lookahead, *, warm_prefill=False):
     per_prompt = []
     for prompt in prompts:
+        initial = ()
+        if warm_prefill:
+            if prompt.get('prefill_events') is None:
+                raise ValueError('warm replay requires the prompt prefill')
+            # Identical priming for every contender; no hint policy runs here.
+            # Cache the immutable LRU order per prompt/capacity, never decode state.
+            primed = prompt.setdefault('prefill_caches', {})
+            if capacity not in primed:
+                lru = LRU(capacity)
+                lru.run(prompt['prefill_events'])
+                primed[capacity] = tuple(lru.resident)
+            initial = primed[capacity]
         events = prompt['events']
         predict = {'LRU/no hint': lambda: no_hint,
                    'B1': lambda: PreviousToken8(events, LAYERS).predict,
                    'perfect IDs': lambda: PerfectIDs(events).predict}[policy]()
         stats = run_laned(events, predict, lookahead or 0, capacity,
-                          bandwidth, SLACK_S, EXPERT_BYTES)
+                          bandwidth, SLACK_S, EXPERT_BYTES, initial_resident=initial)
         per_prompt.append({'prompt_id': prompt['header']['prompt_id'],
                            'decode_tokens': prompt['input']['decode_tokens'], **stats})
     totals = {key: sum(row[key] for row in per_prompt)
@@ -212,12 +233,16 @@ def render_svg(report):
     return '\n'.join(pieces) + '\n'
 
 
-def main():
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--warm-prefill', action='store_true',
+                        help='prime LRU from own prefill, score decode only, write *_warm.json')
+    warm_prefill = parser.parse_args(argv).warm_prefill
     families = {}
     inputs = {}
     for family, (directory, kernel) in FAMILIES.items():
-        families[family] = [load_prompt(ROOT / 'data' / directory / f'{pid}.jsonl', kernel)
-                            for pid in PROMPT_IDS]
+        families[family] = [load_prompt(ROOT / 'data' / directory / f'{pid}.jsonl', kernel,
+                                       warm_prefill=warm_prefill) for pid in PROMPT_IDS]
         inputs[family] = [dict(prompt['input'], path=f'data/{directory}/{prompt["header"]["prompt_id"]}.jsonl')
                           for prompt in families[family]]
         if any(p['input']['decode_tokens'] != 128 for p in families[family]):
@@ -229,7 +254,8 @@ def main():
         for bandwidth in BANDWIDTHS:
             for capacity in CAPACITIES:
                 for policy, lookahead in variants:
-                    row = run_case(prompts, family, bandwidth, capacity, policy, lookahead)
+                    row = run_case(prompts, family, bandwidth, capacity, policy, lookahead,
+                                   warm_prefill=warm_prefill)
                     rows.append(row)
                     print(f'{family:9s} B={bandwidth:g} cap={capacity:4d} '
                           f'{policy:12s} L={str(lookahead):4s} '
@@ -248,7 +274,13 @@ def main():
             'slack_s_per_event': {'value': SLACK_S, 'status': 'ASSUMED', 'source': 'prior test-local 8ms, not fitted'},
             'expert_bytes': {'value': EXPERT_BYTES, 'status': 'ASSUMED INT4 payload; excludes metadata'},
             'request_overhead_s': {'value': 0, 'status': 'ASSUMED'},
-            'cache': 'empty LRU per prompt; fused demand pinned only while being satisfied',
+            'cache': ('ASSUMED prefill-warm LRU per prompt at the scored capacity: '
+                      'replay own recorded prefill in token-then-layer order, demand-only; '
+                      'carry resident keys and LRU order, not time/bytes/counters, into decode; '
+                      'idle lane and unchanged empty B1 history at decode start; no cross-prompt state; '
+                      'fused demand pinned only while being satisfied'
+                      if warm_prefill else
+                      'empty LRU per prompt; fused demand pinned only while being satisfied'),
             'lane': 'one non-preemptive transfer; demand promotes unsent hints; no cancellation or speculative cap',
             'hint_release': 'target j released at start of event j-L, after routing; no release before event 0',
             'b1': 'D_(j-40), same layer, or empty for first decode token; no prefill/history across prompts',
@@ -263,12 +295,15 @@ def main():
         'checks': {'perfect_L0_equals_no_hint_per_prompt': True},
         'results': rows,
     }
-    target = ROOT / 'reports' / 'exposed_wait_matched_L.json'
+    suffix = '_warm' if warm_prefill else ''
+    target = ROOT / 'reports' / f'exposed_wait_matched_L{suffix}.json'
     temporary = target.with_suffix('.json.tmp')
     temporary.write_text(json.dumps(report, indent=2, allow_nan=False) + '\n')
     temporary.replace(target)
-    target.with_suffix('.svg').write_text(render_svg(report))
-    print(f'Wrote {target.relative_to(ROOT)} and {target.with_suffix(".svg").relative_to(ROOT)}', flush=True)
+    if not warm_prefill:
+        target.with_suffix('.svg').write_text(render_svg(report))
+    print(f'Wrote {target.relative_to(ROOT)}' +
+          ('' if warm_prefill else f' and {target.with_suffix(".svg").relative_to(ROOT)}'), flush=True)
 
 
 if __name__ == '__main__':

@@ -12,7 +12,8 @@ warmup. Demand jumps unsent prefetch, including promotion of a queued
 key that becomes demanded. An active transfer is never preempted.
 No cancellation, speculative in-flight cap, or worst-case bound exists.
 
-Cache and lane start empty on every call. Keys are (layer, expert).
+The lane starts empty on every call. Cache defaults to empty, or accepts
+an unscored initial LRU state (oldest first). Keys are (layer, expert).
 Fused demands pin their members only while being satisfied, not during
 preceding compute. Eviction and simultaneous demand touches use sorted
 keys for deterministic LRU ties. Accounting stops when the final demand
@@ -25,11 +26,13 @@ from collections import OrderedDict, deque
 
 
 def run_laned(events, predict, lookahead, capacity_slots, bandwidth_bps,
-              slack_s, expert_bytes):
+              slack_s, expert_bytes, *, initial_resident=()):
     """Replay fused demands through one storage lane + LRU cache.
 
     events: [(pass_id, frozenset keys)] in decode order.
     predict(j) -> set of keys claimed for demand j, released at j-lookahead.
+    initial_resident: unique cached keys in oldest-to-newest LRU order;
+        copied, with no priming time/bytes charged to decode counters.
     Returns dict(exposed_s, fetched_bytes, wasted_bytes, demands, hits).
     Waste counts completed speculative loads not used before eviction/end,
     per load, even if the same key was demanded earlier in the trace.
@@ -48,7 +51,10 @@ def run_laned(events, predict, lookahead, capacity_slots, bandwidth_bps,
     n = len(needs)
     ttime = expert_bytes / bandwidth_bps
 
-    resident = OrderedDict()
+    initial_resident = tuple(initial_resident)
+    resident = OrderedDict.fromkeys(initial_resident)
+    if len(resident) != len(initial_resident) or len(resident) > capacity_slots:
+        raise ValueError('initial cache must have unique keys and fit capacity')
     queued = set()
     pref_q = deque()  # (key, release); FIFO
     urg_q = deque()   # (key, release); ahead of prefetches

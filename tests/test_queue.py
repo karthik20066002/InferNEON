@@ -69,6 +69,40 @@ class QueueTests(unittest.TestCase):
         self.assertEqual(stats['wasted_bytes'], 1)
         self.assertEqual(stats['fetched_bytes'], 18)
 
+    def test_warm_cache_excludes_priming_cost_and_preserves_lru_order(self):
+        prefill = [(0, demand(0)), (1, demand(8)), (2, demand(4))]
+        decode = [(0, demand(0)), (1, demand(16)), (2, demand(4))]
+        for cap in (8, 12, 16, 24):
+            lru = LRU(cap, expert_bytes=1)
+            lru.run(prefill)
+            initial = tuple(lru.resident)  # oldest first, not sorted by key
+            expected = lru.run(decode)  # resets counters but keeps residency
+            got = run_laned(decode, lambda j: set(), 0, cap, 1, 3, 1,
+                            initial_resident=initial)
+            self.assertEqual(got['fetched_bytes'], expected.missed_experts)
+            self.assertEqual(got['hits'], expected.hits)
+            self.assertAlmostEqual(got['exposed_s'], expected.missed_experts)
+            self.assertEqual(got['demands'], len(decode))
+            self.assertEqual(got['wasted_bytes'], 0)
+
+    def test_warm_full_hit_has_no_decode_transfer_or_wait(self):
+        got = run_laned([(0, demand(0))], lambda j: set(), 0, 8, 1, 3, 1,
+                        initial_resident=sorted(demand(0)))
+        self.assertEqual(got, {'exposed_s': 0, 'fetched_bytes': 0,
+                               'wasted_bytes': 0, 'demands': 1, 'hits': 1})
+
+    def test_warm_cache_is_copied_and_cannot_exceed_capacity(self):
+        initial = list(sorted(demand(0)))
+        before = initial.copy()
+        for _ in range(2):
+            got = run_laned([(0, demand(8))], lambda j: set(), 0, 8, 1, 3, 1,
+                            initial_resident=initial)
+            self.assertEqual(got['fetched_bytes'], 8)
+            self.assertEqual(initial, before)
+        for bad in (initial + [(0, 8)], initial + [initial[0]]):
+            with self.assertRaises(ValueError):
+                run_laned([], lambda j: set(), 0, 8, 1, 3, 1, initial_resident=bad)
+
     def test_empty_trace(self):
         stats = replay([])
         self.assertEqual(stats['demands'], 0)
