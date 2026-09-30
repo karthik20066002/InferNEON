@@ -237,10 +237,16 @@ fn forward_token<B: crate::storage::BlockStorage>(
     Ok(())
 }
 
-/// Greedy head: stream 8 vocab shards, running argmax. Returns token id.
+/// Greedy head: stream 8 vocab shards, tracking the top-10 (id, logit) pairs.
+///
+/// The argmax alone cannot support a max|Δlogit| claim — a reviewer wants the
+/// actual logit values, not "the argmax matched". So we keep the 10 best
+/// (id, logit) pairs across all 50304 rows and print them as hex after the
+/// pass. 10 x (id + f32 bits) per step is cheap next to the 103M-MAC head.
 fn greedy_head<B: crate::storage::BlockStorage>(blk: &mut B) -> Result<u32, ()> {
-    let mut best_id = 0u32;
-    let mut best_val = f32::NEG_INFINITY;
+    // top-10 as parallel arrays; kept sorted descending by value.
+    let mut top_id = [0u32; 10];
+    let mut top_val = [f32::NEG_INFINITY; 10];
     unsafe {
         for s in 0..fetch::HEAD_SHARDS {
             fetch::fetch_head_shard(blk, s)?;
@@ -250,21 +256,39 @@ fn greedy_head<B: crate::storage::BlockStorage>(blk: &mut B) -> Result<u32, ()> 
                 for i in 0..2048usize {
                     acc += nnmath::bf16_to_f32(shard[r * 2048 + i]) * H_BUF[i];
                 }
-                if acc > best_val {
-                    best_val = acc;
-                    best_id = (s * fetch::HEAD_SHARD_ROWS + r) as u32;
+                // Insert into the sorted top-10 if it beats the current 10th.
+                if acc > top_val[9] {
+                    let mut j = 9;
+                    while j > 0 && top_val[j - 1] < acc {
+                        top_val[j] = top_val[j - 1];
+                        top_id[j] = top_id[j - 1];
+                        j -= 1;
+                    }
+                    top_val[j] = acc;
+                    top_id[j] = (s * fetch::HEAD_SHARD_ROWS + r) as u32;
                 }
             }
-            // Stream the head argmax per shard: a single 50k-row pass is long
-            // enough under TCG to look like a hang without a heartbeat.
+            // Heartbeat: a 50k-row pass is long enough under TCG to look like a
+            // hang without one. Print the running best so progress is visible.
             uart::print("head shard:");
             uart::print_hex_u32(s as u32);
             uart::print(" best:");
-            uart::print_hex_u32(best_id);
+            uart::print_hex_u32(top_id[0]);
+            uart::print("\n");
+        }
+        // Emit the top-10 for the host to diff against its own logits.
+        // Format: "lg <rank> <id:hex> <logit:f32hex>" x10.
+        for k in 0..10usize {
+            uart::print("lg ");
+            uart::print_hex_u32(k as u32);
+            uart::print(" ");
+            uart::print_hex_u32(top_id[k]);
+            uart::print(" ");
+            uart::print_hex_u32(top_val[k].to_bits());
             uart::print("\n");
         }
     }
-    Ok(best_id)
+    Ok(top_id[0])
 }
 
 /// Wired run: prefill PROMPT_IDS, decode DECODE_STEPS greedy. UART hex ids.
@@ -277,10 +301,10 @@ pub fn run<B: crate::storage::BlockStorage>(
 ) -> Result<usize, ()> {
     let mut n_gen = 0usize;
     // prefill prompt (KV fill, no output)
-    for (t, tok) in PROMPT_IDS.iter().enumerate() {
+    for (t, tok) in crate::prompt::PROMPT_IDS.iter().enumerate() {
         forward_token(blk, *tok, t, layer_bases, expert_stride)?;
     }
-    let mut t = PROMPT_IDS.len();
+    let mut t = crate::prompt::PROMPT_LEN;
     let mut tok = 0u32;
     // first decode id comes from the last prefill hidden state: recompute
     // head over it (forward_token left H_BUF at last prompt token).

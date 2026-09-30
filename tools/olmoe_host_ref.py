@@ -186,6 +186,7 @@ def main() -> None:
             'next': nxt,
             'top10_ids': [int(x) for x in topi.tolist()],
             'top10_p': [round(float(x), 6) for x in topv.tolist()],
+            'top10_logits': [round(float(logits[topi[k]]), 5) for k in range(10)],
             'logit_max': round(float(logits.max()), 5),
             'logit_argmax': round(float(logits[nxt]), 5),
             'logit_top2_gap': round(float(t2[0] - t2[1]), 5),

@@ -104,7 +104,7 @@ pub const NUM_HEADS: usize = 16;
 pub const NUM_KV_HEADS: usize = 16;
 pub const HEAD_DIM: usize = 128;
 pub const VOCAB_SIZE: usize = 50304;
-pub const MAX_TOKENS: usize = 16;
-/// Prompt under test: "The sky is blue" (OLMoE tokenizer), +3 greedy decode.
-pub const PROMPT_IDS: [u32; 4] = [510, 8467, 310, 4797];
-pub const DECODE_STEPS: usize = 3;
+pub const MAX_TOKENS: usize = 128;
+/// Greedy decode steps per prompt. Prompt ids live in src/prompt.rs (generated
+/// by tools/gen_prompt.py) so a run is a rebuild, not an image repack.
+pub const DECODE_STEPS: usize = 32;

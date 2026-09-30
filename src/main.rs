@@ -24,6 +24,7 @@ mod infer;
 mod layer;
 mod nnmath;
 mod pipeline;
+mod prompt;
 mod storage;
 mod sync;
 mod token;
@@ -113,7 +114,7 @@ fn boot_fetch_and_run() -> Result<usize, ()> {
         return Err(());
     }
     uart::print("exec selftest: PASS\n");
-    let mut out = [0u32; 8];
+    let mut out = [0u32; crate::config::DECODE_STEPS];
     let n = infer::run(&mut blk, &bases, stride, &mut out)?;
     Ok(n)
 }

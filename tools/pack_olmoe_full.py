@@ -14,7 +14,7 @@ Directory entries (tag, all little-endian):
   6 rope_cos [MAXPOS,64] float32, host-exact (theta 10000, head_dim 128)
   7 rope_sin [MAXPOS,64] float32
 dtype flag: 0 = bf16, 1 = fp32 (norms travel as stored; kernel converts).
-MAXPOS = 16 (4 prompt + 3 decode + margin; KV sized to match).
+MAXPOS = 128  # must match firmware config::MAX_TOKENS (KV + RoPE both sized by it)
 """
 import argparse
 import json
@@ -34,7 +34,7 @@ DIR_MAGIC = 0x0000AE87
 # after the expert region, whose end the kernel recomputes from the LBA-0
 # table: dir_lba = base0/512 + layers*experts*stride/512. See
 # config::DIR_LBA_AFTER_EXPERTS.
-MAXPOS = 16
+MAXPOS = 128
 HEAD_DIM = 128
 ROPE_THETA = 10000.0
 
