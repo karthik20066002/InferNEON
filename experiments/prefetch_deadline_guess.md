@@ -1,5 +1,10 @@
 # Prefetch-deadline guess (locked BEFORE running the test)
 
+> RETIRED: this unequal-L arithmetic is not a single-lane result. The test
+> now checks matched timing and the shared perfect-ID function instead.
+> See the current scope in `PREREGISTRATION.md`; retain the text below only
+> as a record of the rejected setup, not as an experiment that can speak.
+
 Date: 2026-09-30. Test: `tests/test_prefetch_deadline.py`.
 
 ## Question

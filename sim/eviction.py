@@ -10,7 +10,7 @@ Contenders:
   LeastStale               -- stale/current pass partition (SpecMD 2026)
   HelenDual                -- exact port of the firmware MFU+LRU design
   HybridStaleHeat          -- LS stale-pool bottom + heat promotion (Helen's)
-  Belady                   -- offline optimal ceiling (needs the full trace)
+  BeladyEviction           -- offline farthest-next-use eviction, NOT an ID oracle
 """
 from __future__ import annotations
 
@@ -348,10 +348,14 @@ class HybridStaleHeat(_TieredBase):
             self.passtag.pop(victim, None)
 
 
-class Belady(Policy):
-    """Offline optimal ceiling: evict the resident used furthest in future."""
+class BeladyEviction(Policy):
+    """Offline farthest-next-use eviction; not the demand-ID oracle.
 
-    name = 'Belady'
+    Uses the full future trace to choose victims, not to issue hints.
+    Excluded from the matched-L exposed-wait comparison.
+    """
+
+    name = 'Belady-eviction'
 
     def __init__(self, capacity_slots, expert_bytes=EXPERT_BYTES):
         super().__init__(capacity_slots, expert_bytes)
@@ -373,9 +377,14 @@ class Belady(Policy):
             for k in positions[i]:
                 next_use[(i, k)] = last.get(k, float('inf'))
                 last[k] = i
+        # Every resident needs a live next-use value, including keys NOT in
+        # the current demand (the actual eviction candidates).
+        next_at = dict(last)
         resident = set()
         for i, (pass_id, keys) in enumerate(indexed):
             need = set(keys)
+            for k in need:
+                next_at[k] = next_use[(i, k)]
             hit = need <= resident
             self.stats.demands += 1
             if hit:
@@ -387,7 +396,7 @@ class Belady(Policy):
                 cands = [k for k in resident if k not in need]
                 if not cands:
                     break
-                victim = max(cands, key=lambda k: next_use.get((i, k), float('inf')))
+                victim = max(sorted(cands), key=lambda k: next_at[k])
                 resident.discard(victim)
             resident.update(missing)
         return self.stats

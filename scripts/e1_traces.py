@@ -15,7 +15,7 @@ import time
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from sim.eviction import (LRU, LFU, LFUHalving, LeastStale, HelenDual,
-                          HybridStaleHeat, Belady, EXPERT_BYTES)
+                          HybridStaleHeat, BeladyEviction, EXPERT_BYTES)
 
 TRACES = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..',
                       'data', 'traces')
@@ -54,7 +54,7 @@ def policies(cap):
         HybridStaleHeat(cap, theta=0.50),
         HybridStaleHeat(cap, theta=0.625),
         HybridStaleHeat(cap, theta=0.75),
-        Belady(cap),
+        BeladyEviction(cap),
     ]
 
 

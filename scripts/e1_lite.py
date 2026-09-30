@@ -22,7 +22,7 @@ WORKERS = int(os.environ.get('E1_WORKERS', '3'))
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from sim.engine import events_from_routed
 from sim.eviction import (LRU, LFU, LFUHalving, LeastStale, HelenDual,
-                          HybridStaleHeat, Belady, EXPERT_BYTES)
+                          HybridStaleHeat, BeladyEviction, EXPERT_BYTES)
 
 DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..',
                    'reports', 'drift_35_top16')
@@ -54,7 +54,7 @@ def policies(cap):
         HybridStaleHeat(cap, theta=0.50),
         HybridStaleHeat(cap, theta=0.625),
         HybridStaleHeat(cap, theta=0.75),
-        Belady(cap),
+        BeladyEviction(cap),
     ]
 
 

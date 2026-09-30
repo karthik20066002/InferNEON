@@ -1,5 +1,33 @@
 # Preregistration — InferNEON routing and cache metrics
 
+## Current scope — matched-L exposed wait (supersedes prior headlines)
+
+Locked before the matched-L runs. Reason: unequal lookahead and per-hint
+bandwidth arithmetic cannot establish whether hints help one storage lane.
+The historical recall/E4 headlines below are suspended, not implemented.
+
+- Only oracle: demand-time perfect IDs, `predict(j) = D_j`, implemented in
+  `sim/predictors.py::PerfectIDs.predict`. Belady-eviction is not this oracle.
+- Only current comparison: LRU/no hint, B1 (previous decode token's 8 at
+  the same layer), perfect IDs; both hint policies at L = 0, 1, 4, 40
+  layer events. Release target j at event j-L; no pre-start hints. B1 has
+  no first-token history. At L=40, B1 uses the current routed event's IDs.
+- Decode only, both families separately, the frozen 20 held-out prompts
+  listed below. Empty cache, lane, and predictor history per prompt; no
+  prefill warmup. Pool total wait / decode tokens within each family.
+- Existing capacities: 320, 640, 1000, 2000, 3000, 4000, 6500 slots.
+  Bandwidth 100e6 and 413e6 bytes/s is ASSUMED. Compute slack 8 ms/layer
+  event is ASSUMED (the prior test-local value, not measured or fitted).
+  Expert transfer size 1,572,864 bytes is ASSUMED INT4 payload, excluding
+  metadata/request overhead. One serial lane, fixed LRU, no cancellation.
+- Outcome: exposed wait, not recall. Descriptive simulated rankings only;
+  no significance or hardware claims. Preserve zero/negative hint gains.
+- Deliver `reports/exposed_wait_matched_L.json`, one exposed-wait plot,
+  and a 10-line note, then stop. No E4 always-wrong run, cap, cancel,
+  worst-case bound, new predictor, hardware work, or `sim.engine` rewrite.
+
+## Historical preregistration (retained verbatim below)
+
 Locked 2026-09-28, BEFORE the 35-prompt drift results. Anything decided
 after seeing those results is exploratory, not confirmatory. Ratifying
 commit recorded at the bottom; the content above it is frozen there.

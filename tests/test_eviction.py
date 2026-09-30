@@ -1,7 +1,7 @@
 import unittest
 from sim.engine import events_from_routed
 from sim.eviction import (LRU, LFU, LFUHalving, LeastStale, HelenDual,
-                          HybridStaleHeat, Belady, HeatStore)
+                          HybridStaleHeat, BeladyEviction, HeatStore)
 
 
 def evs(lists, start=0):
@@ -63,9 +63,18 @@ class EvictionTests(unittest.TestCase):
         rng = random.Random(0)
         trace = evs([frozenset(rng.sample(range(24), 8)) for _ in range(30)])
         lru = LRU(24)
-        bel = Belady(24)
+        bel = BeladyEviction(24)
         self.assertGreaterEqual(bel.run(trace).hit_rate(),
                                 lru.run(trace).hit_rate())
+
+    def test_belady_eviction_uses_future_of_non_demanded_residents(self):
+        # Keep soon-needed 0, evict 1 (never used again). The old (i, key)
+        # lookup incorrectly gave EVERY non-demanded resident infinity.
+        trace = evs([range(8), range(2, 10), [0, 2, 3, 4, 5, 6, 7, 8]])
+        result = BeladyEviction(9).run(trace)
+        self.assertEqual(result.missed_experts, 10)
+        self.assertEqual(result.hits, 1)
+        self.assertEqual(BeladyEviction.name, 'Belady-eviction')
 
     def test_events_from_routed_keys_are_layer_qualified(self):
         evs_out = events_from_routed('p', [[[1, 2, 3, 4, 5, 6, 7, 0]]])

@@ -1,5 +1,10 @@
 # Stumble log — 30 September 2026, evening
 
+> RETIRED as evidence: unequal lookahead and independent overlap arithmetic
+> do not measure a serial storage lane. The historical observation below is
+> not a result. Only `reports/exposed_wait_matched_L.json` supports the
+> current exposed-wait comparison; the old executable test was replaced.
+
 I was doing the obvious next thing: ranking two predictors by recall
 over the drift traces. Oracle IDs versus previous-demand, B1-style.
 Nothing ambitious. Just the next rung on the ladder.
